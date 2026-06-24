@@ -1,0 +1,89 @@
+# ============================================================
+#  ANSH FORMS — .gitignore
+#  Next.js 15 + Prisma + Supabase + TypeScript
+# ============================================================
+
+# ── Dependencies ─────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ── Next.js build output ─────────────────────────────────────
+.next/
+out/
+build/
+dist/
+
+# ── TypeScript build info ────────────────────────────────────
+*.tsbuildinfo
+next-env.d.ts
+
+# ── Environment variables (NEVER commit secrets) ─────────────
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+
+# Keep example env file (no real secrets)
+!.env.example
+
+# ── Prisma ───────────────────────────────────────────────────
+# Keep schema.prisma & migrations, ignore generated client
+prisma/generated/
+prisma/*.db
+prisma/*.db-journal
+
+# ── Logs ─────────────────────────────────────────────────────
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+
+# ── Package manager lockfiles (keep only one) ────────────────
+# Keeping package-lock.json (npm), ignoring others
+yarn.lock
+pnpm-lock.yaml
+.pnpm-store/
+
+# ── OS & Editor artifacts ─────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+
+# VSCode — keep workspace settings but ignore local state
+.vscode/settings.json
+.vscode/*.code-workspace
+!.vscode/extensions.json
+
+# JetBrains IDEs
+.idea/
+*.iml
+
+# ── Misc test / scratch files at root ───────────────────────
+check-db.ts
+test-db-connection.js
+
+# ── Coverage & testing artifacts ────────────────────────────
+coverage/
+.nyc_output/
+.jest-cache/
+
+# ── Vercel / Netlify deployment ──────────────────────────────
+.vercel
+.netlify
+
+# ── Turbopack / Turborepo ────────────────────────────────────
+.turbo/
+
+# ── Storybook ────────────────────────────────────────────────
+storybook-static/

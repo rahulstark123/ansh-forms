@@ -1,0 +1,542 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+@custom-variant midnight (&:is(.theme-midnight *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --color-ring: var(--ring);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-destructive: var(--destructive);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-sm: calc(var(--radius) * 0.6);
+}
+
+:root {
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --radius: 0.875rem;
+  
+  --background: oklch(0.99 0 0);
+  --foreground: oklch(0.25 0.02 200);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.25 0.02 200);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.25 0.02 200);
+  
+  /* Primary Accent: Teal/Emerald theme for Form builder by default */
+  --primary: oklch(0.60 0.16 170); 
+  --primary-foreground: oklch(0.98 0.01 170);
+  --secondary: oklch(0.96 0.01 170);
+  --secondary-foreground: oklch(0.35 0.10 170);
+  
+  --muted: oklch(0.96 0.01 170);
+  --muted-foreground: oklch(0.55 0.02 170);
+  --border: oklch(0.92 0.01 170);
+  --input: oklch(0.92 0.01 170);
+  --ring: oklch(0.60 0.16 170);
+  --destructive: oklch(0.6 0.18 25);
+
+  /* Custom UI Signature Tokens */
+  --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.02), 0 1px 2px -1px rgb(0 0 0 / 0.02), 0 4px 12px -2px rgb(0 0 0 / 0.04);
+  --card-shadow-hover: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 10px 20px -5px rgb(0 0 0 / 0.08);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.4);
+}
+
+/* Light Theme Accent Calibrations */
+[data-accent="emerald"] { 
+  --primary: oklch(0.60 0.16 170); 
+  --primary-foreground: oklch(0.98 0.01 170);
+  --ring: oklch(0.60 0.16 170);
+}
+[data-accent="amber"] { 
+  --primary: oklch(0.64 0.18 80); 
+  --primary-foreground: oklch(0.99 0.01 80);
+  --ring: oklch(0.64 0.18 80);
+}
+[data-accent="ocean"] { 
+  --primary: oklch(0.58 0.16 220); 
+  --primary-foreground: oklch(0.98 0.01 220);
+  --ring: oklch(0.58 0.16 220);
+}
+[data-accent="purple"] { 
+  --primary: oklch(0.58 0.22 280); 
+  --primary-foreground: oklch(0.99 0.01 280);
+  --ring: oklch(0.58 0.22 280);
+}
+[data-accent="graphite"] { 
+  --primary: oklch(0.35 0.01 240); 
+  --primary-foreground: oklch(0.98 0.01 240);
+  --ring: oklch(0.35 0.01 240);
+}
+
+.dark {
+  --background: oklch(0.12 0.02 200);
+  --foreground: oklch(0.98 0.01 200);
+  --card: oklch(0.15 0.03 200);
+  --card-foreground: oklch(0.98 0.01 200);
+  --popover: oklch(0.15 0.03 200);
+  --popover-foreground: oklch(0.98 0.01 200);
+  
+  --primary: oklch(0.70 0.16 170);
+  --primary-foreground: oklch(0.12 0.02 200);
+  --secondary: oklch(0.18 0.02 200);
+  --secondary-foreground: oklch(0.98 0.01 200);
+  --muted: oklch(0.18 0.02 200);
+  --muted-foreground: oklch(0.65 0.015 200);
+  
+  --border: oklch(0.25 0.03 200);
+  --input: oklch(0.25 0.03 200);
+  --ring: oklch(0.70 0.16 170);
+  --glass-bg: rgba(15, 23, 42, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+  --card-shadow-hover: 0 16px 36px -6px rgba(0, 0, 0, 0.55), 0 0 0 1.5px var(--primary);
+}
+
+/* Dark Theme Accent Calibrations */
+.dark[data-accent="emerald"] { --primary: oklch(0.70 0.16 170); --ring: oklch(0.70 0.16 170); }
+.dark[data-accent="amber"] { --primary: oklch(0.76 0.15 80); --ring: oklch(0.76 0.15 80); }
+.dark[data-accent="ocean"] { --primary: oklch(0.70 0.14 220); --ring: oklch(0.70 0.14 220); }
+.dark[data-accent="purple"] { --primary: oklch(0.72 0.20 280); --ring: oklch(0.72 0.20 280); }
+.dark[data-accent="graphite"] { --primary: oklch(0.70 0.01 240); --ring: oklch(0.70 0.01 240); }
+
+/* Premium Layout Accents */
+.mesh-gradient {
+  background-color: var(--background);
+  background-image: 
+    radial-gradient(at 0% 0%, color-mix(in srgb, var(--primary) 12%, transparent) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, color-mix(in srgb, oklch(0.70 0.14 220) 12%, transparent) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, color-mix(in srgb, var(--primary) 8%, transparent) 0px, transparent 50%);
+}
+
+/* Form builder canvas — soft ambient gradient behind the live preview */
+.builder-canvas-bg {
+  background-color: oklch(0.97 0.01 170);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 15% 0%, color-mix(in srgb, var(--primary) 18%, transparent), transparent 55%),
+    radial-gradient(ellipse 70% 55% at 85% 10%, color-mix(in srgb, oklch(0.70 0.14 220) 14%, transparent), transparent 50%),
+    radial-gradient(ellipse 90% 70% at 50% 100%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 60%),
+    linear-gradient(165deg, oklch(0.98 0.008 200) 0%, oklch(0.96 0.015 170) 45%, oklch(0.97 0.01 220) 100%);
+}
+
+.builder-canvas-bg-mesh {
+  background-color: oklch(0.97 0.01 170);
+  background-image:
+    linear-gradient(120deg, color-mix(in srgb, var(--primary) 10%, transparent) 0%, transparent 60%),
+    radial-gradient(circle at 20% 10%, color-mix(in srgb, var(--primary) 22%, transparent), transparent 45%),
+    radial-gradient(circle at 90% 20%, color-mix(in srgb, oklch(0.70 0.14 220) 18%, transparent), transparent 42%);
+}
+
+.builder-canvas-bg-dots {
+  background-color: oklch(0.98 0.005 180);
+  background-image:
+    radial-gradient(color-mix(in srgb, var(--primary) 20%, transparent) 1px, transparent 1px),
+    radial-gradient(color-mix(in srgb, oklch(0.70 0.14 220) 20%, transparent) 1px, transparent 1px);
+  background-size: 22px 22px, 22px 22px;
+  background-position: 0 0, 11px 11px;
+}
+
+.builder-canvas-bg-aurora {
+  background-color: oklch(0.96 0.01 210);
+  background-image:
+    radial-gradient(ellipse 70% 60% at 10% 0%, color-mix(in srgb, var(--primary) 24%, transparent), transparent 55%),
+    radial-gradient(ellipse 75% 65% at 90% 0%, color-mix(in srgb, oklch(0.72 0.20 280) 20%, transparent), transparent 58%),
+    linear-gradient(155deg, oklch(0.97 0.006 210) 0%, oklch(0.95 0.015 190) 45%, oklch(0.96 0.01 250) 100%);
+}
+
+.builder-canvas-bg-silk {
+  background-color: oklch(0.97 0.01 220);
+  background-image:
+    radial-gradient(120% 80% at 0% 0%, rgba(255, 255, 255, 0.9) 0%, transparent 60%),
+    linear-gradient(135deg, rgba(14, 165, 233, 0.14), rgba(16, 185, 129, 0.10) 45%, rgba(139, 92, 246, 0.10)),
+    repeating-linear-gradient(115deg, rgba(255,255,255,0.0) 0 8px, rgba(255,255,255,0.22) 8px 16px);
+}
+
+.builder-canvas-bg-noir {
+  background-color: #0b0f17;
+  background-image:
+    radial-gradient(90% 60% at 10% 0%, rgba(16,185,129,0.18), transparent 60%),
+    radial-gradient(70% 50% at 100% 10%, rgba(14,165,233,0.2), transparent 65%),
+    linear-gradient(160deg, #0b0f17 0%, #111827 50%, #0a1320 100%);
+}
+
+.dark .builder-canvas-bg {
+  background-color: oklch(0.12 0.02 260);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 15% 0%, color-mix(in srgb, var(--primary) 22%, transparent), transparent 55%),
+    radial-gradient(ellipse 70% 55% at 85% 10%, color-mix(in srgb, oklch(0.55 0.12 220) 16%, transparent), transparent 50%),
+    radial-gradient(ellipse 90% 70% at 50% 100%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 60%),
+    linear-gradient(165deg, oklch(0.11 0.02 260) 0%, oklch(0.09 0.025 200) 50%, oklch(0.10 0.02 170) 100%);
+}
+
+.dark .builder-canvas-bg-mesh {
+  background-color: oklch(0.11 0.02 230);
+  background-image:
+    linear-gradient(120deg, color-mix(in srgb, var(--primary) 15%, transparent) 0%, transparent 60%),
+    radial-gradient(circle at 20% 10%, color-mix(in srgb, var(--primary) 26%, transparent), transparent 45%),
+    radial-gradient(circle at 90% 20%, color-mix(in srgb, oklch(0.55 0.12 220) 20%, transparent), transparent 42%);
+}
+
+.dark .builder-canvas-bg-dots {
+  background-color: oklch(0.10 0.02 220);
+  background-image:
+    radial-gradient(color-mix(in srgb, var(--primary) 26%, transparent) 1px, transparent 1px),
+    radial-gradient(color-mix(in srgb, oklch(0.55 0.12 220) 24%, transparent) 1px, transparent 1px);
+  background-size: 22px 22px, 22px 22px;
+  background-position: 0 0, 11px 11px;
+}
+
+.dark .builder-canvas-bg-aurora {
+  background-color: oklch(0.10 0.02 250);
+  background-image:
+    radial-gradient(ellipse 70% 60% at 10% 0%, color-mix(in srgb, var(--primary) 30%, transparent), transparent 55%),
+    radial-gradient(ellipse 75% 65% at 90% 0%, color-mix(in srgb, oklch(0.72 0.20 280) 24%, transparent), transparent 58%),
+    linear-gradient(155deg, oklch(0.10 0.02 250) 0%, oklch(0.09 0.025 210) 45%, oklch(0.09 0.02 280) 100%);
+}
+
+.dark .builder-canvas-bg-silk {
+  background-color: #0f1724;
+  background-image:
+    radial-gradient(120% 80% at 0% 0%, rgba(255, 255, 255, 0.06) 0%, transparent 60%),
+    linear-gradient(135deg, rgba(14, 165, 233, 0.18), rgba(16, 185, 129, 0.12) 45%, rgba(139, 92, 246, 0.14)),
+    repeating-linear-gradient(115deg, rgba(255,255,255,0.0) 0 8px, rgba(255,255,255,0.03) 8px 16px);
+}
+
+.dark .builder-canvas-bg-noir {
+  background-color: #070b12;
+  background-image:
+    radial-gradient(90% 60% at 10% 0%, rgba(16,185,129,0.20), transparent 60%),
+    radial-gradient(70% 50% at 100% 10%, rgba(14,165,233,0.22), transparent 65%),
+    linear-gradient(160deg, #070b12 0%, #0d111a 50%, #050913 100%);
+}
+
+.builder-canvas-surface {
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border: 1px solid color-mix(in srgb, var(--border) 80%, var(--primary) 20%);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.03),
+    0 8px 32px -8px color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+.dark .builder-canvas-surface {
+  background: oklch(0.17 0.03 200);
+  border: 1px solid oklch(0.32 0.04 200);
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.25),
+    0 12px 40px -12px color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+/* Form builder — dark mode readability */
+.dark .form-builder .builder-field-card {
+  background: oklch(0.20 0.035 200);
+  border-color: oklch(0.32 0.04 200);
+}
+
+.dark .form-builder .builder-field-card--selected {
+  background: oklch(0.23 0.04 200);
+  border-color: var(--primary);
+  box-shadow: 0 4px 20px -6px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+
+.dark .form-builder .builder-input-preview {
+  background: oklch(0.14 0.025 200);
+  border-color: oklch(0.34 0.04 200);
+  color: oklch(0.75 0.02 200);
+}
+
+.dark .form-builder .builder-field-meta {
+  color: oklch(0.72 0.02 200);
+}
+
+.dark .form-builder .builder-field-label {
+  color: oklch(0.95 0.01 200);
+}
+
+.dark .form-builder .builder-panel-title {
+  color: oklch(0.78 0.02 200);
+}
+
+.dark .form-builder .builder-empty-state {
+  border-color: oklch(0.35 0.04 200);
+  background: oklch(0.18 0.03 200);
+}
+
+.dark .form-builder .builder-empty-state p {
+  color: oklch(0.70 0.02 200);
+}
+
+.dark .form-builder .builder-palette-btn {
+  background: oklch(0.18 0.03 200);
+  border-color: oklch(0.30 0.04 200);
+  color: oklch(0.88 0.01 200);
+}
+
+.dark .form-builder .builder-palette-btn:hover {
+  background: oklch(0.22 0.035 200);
+  border-color: color-mix(in srgb, var(--primary) 40%, transparent);
+}
+
+.dark .form-builder .builder-option-text {
+  color: oklch(0.82 0.02 200);
+}
+
+.form-builder .builder-input-preview {
+  background: oklch(0.97 0.005 200);
+  border: 1px solid var(--border);
+  color: oklch(0.55 0.02 200);
+}
+
+.form-builder .builder-field-card {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+.dark .form-builder .premium-input {
+  background-color: oklch(0.14 0.025 200);
+  border-color: oklch(0.34 0.04 200);
+  color: oklch(0.95 0.01 200);
+}
+
+.dark .form-builder .premium-input::placeholder {
+  color: oklch(0.58 0.02 200);
+}
+
+.dark .form-builder label,
+.dark .form-builder .builder-panel-title {
+  color: oklch(0.72 0.02 200) !important;
+}
+
+.crm-card {
+  border-radius: var(--radius);
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--card-shadow);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.crm-card:hover {
+  box-shadow: var(--card-shadow-hover);
+  transform: translateY(-2px);
+  border-color: var(--primary);
+}
+
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  html {
+    @apply font-sans scroll-smooth;
+    font-size: 18px;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    background-attachment: fixed;
+  }
+}
+
+.landing-grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 20%, transparent 70%);
+}
+
+/* Premium Input Styles (Theme-aware inputs) */
+.premium-input {
+  width: 100%;
+  background-color: oklch(from var(--card) l c h / 0.5);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 0.75);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--foreground);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.premium-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--primary) 18%, transparent);
+  background-color: var(--card);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--primary) 20%, transparent);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--primary);
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fadeInDown {
+  animation: fadeInDown 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.animate-shimmer {
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 28s linear infinite;
+}
+.animate-marquee:hover,
+.hover\:\[animation-play-state\:paused\]:hover {
+  animation-play-state: paused;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.animate-slideInRight {
+  animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* react-phone-number-input overrides to match premium styling */
+.PhoneInput {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.PhoneInputInput {
+  flex: 1;
+  width: 100%;
+  height: 2.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  background-color: var(--card);
+  padding: 0.5rem 0.875rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: inherit;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.PhoneInputInput:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1.5px var(--primary);
+}
+
+.PhoneInputCountry {
+  display: flex;
+  align-items: center;
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.75rem;
+  height: 2.25rem;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.2s ease;
+}
+
+.PhoneInputCountry:hover {
+  border-color: var(--primary);
+}
+
+.PhoneInputCountrySelect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.PhoneInputCountryIcon {
+  width: 1.5rem;
+  height: 1.125rem;
+  border-radius: 0.25rem;
+  object-fit: cover;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.PhoneInputCountrySelectArrow {
+  margin-left: 0.25rem;
+  border-left: 0.25rem solid transparent;
+  border-right: 0.25rem solid transparent;
+  border-top: 0.25rem solid var(--slate-400);
+  width: 0;
+  height: 0;
+}
+

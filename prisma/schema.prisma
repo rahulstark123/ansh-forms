@@ -1,0 +1,74 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Workspace {
+  id        Int       @id @default(autoincrement())
+  wid       Int       @unique
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  profiles  Profile[]
+}
+
+model Profile {
+  id                     String    @id @default(uuid())
+  email                  String    @unique
+  password               String
+  name                   String
+  phone                  String    @default("")
+  bio                    String    @default("")
+  accent                 String    @default("emerald")
+  wid                    Int       @default(1)
+  hasCompletedOnboarding Boolean   @default(false)
+  pricingPlan            String    @default("Free Trial") // "Free", "Free Trial", or "Pro"
+  trialEndsAt            DateTime? // When the 14-day trial ends
+  // Extended profile fields
+  dob                    String    @default("")
+  bloodGroup             String    @default("")
+  officeLocation         String    @default("")
+  pincode                String    @default("")
+  state                  String    @default("")
+  city                   String    @default("")
+  emergencyName          String    @default("")
+  emergencyPhone         String    @default("")
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  workspace              Workspace @relation(fields: [wid], references: [wid])
+  forms                  Form[]
+}
+
+model Form {
+  id           String       @id @default(uuid())
+  title        String
+  description  String       @default("")
+  category     String       @default("General")
+  isPublished  Boolean      @default(false)
+  slug         String       @unique // Public URL slug
+  fields       Json         @default("[]") // Array of fields
+  steps        Json         @default("[]") // Multi-step definition
+  landingPage  Json         @default("{}") // Landing page config
+  settings     Json         @default("{}") // Custom branding & settings
+  views        Int          @default(0)
+  profileId    String
+  profile      Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  submissions  Submission[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Submission {
+  id            String   @id @default(uuid())
+  formId        String
+  form          Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+  customId      String   @unique // e.g. ANSH-12345
+  answers       Json     // Key-value response data
+  status        String   @default("Submitted") // Submitted, Under Review, Approved, Rejected
+  statusComment String   @default("")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
