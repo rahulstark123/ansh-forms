@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '.prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
@@ -11,7 +11,7 @@ if (typeof window === 'undefined') {
   const pool = new Pool({ connectionString });
   const adapter = new PrismaPg(pool);
   
-  prismaInstance = globalForPrisma.prisma || new PrismaClient({ adapter });
+  prismaInstance = globalForPrisma.prisma || new PrismaClient({ adapter } as any);
   
   if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prismaInstance;
 } else {
