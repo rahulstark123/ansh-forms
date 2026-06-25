@@ -161,6 +161,8 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [signingIn, setSigningIn] = useState(false);
+  const [signingInMsg, setSigningInMsg] = useState({ name: "", email: "", method: "email" as "email" | "google" });
 
   // Carousel Active Slide State
   const [activeSlide, setActiveSlide] = useState(0);
@@ -239,6 +241,11 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
         const syncData = await res.json();
         setUser(syncData.user);
 
+        // Show transition screen before redirect
+        setSigningInMsg({ name: syncData.user.name || "Welcome back", email: email, method: "email" });
+        setSigningIn(true);
+        await new Promise((r) => setTimeout(r, 2000));
+
         if (syncData.user.hasCompletedOnboarding === false) {
           router.push("/onboarding");
         } else {
@@ -306,6 +313,12 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
 
         const syncData = await res.json();
         setUser(syncData.user);
+
+        // Show transition screen before redirect
+        setSigningInMsg({ name: syncData.user.name || name, email: email, method: "email" });
+        setSigningIn(true);
+        await new Promise((r) => setTimeout(r, 2000));
+
         router.push("/onboarding");
       }
     } catch (err: any) {
@@ -328,6 +341,10 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
       if (authError) {
         setError(authError.message);
         setIsGoogleLoading(false);
+      } else {
+        // Show overlay while Google redirects
+        setSigningInMsg({ name: "Google Account", email: "", method: "google" });
+        setSigningIn(true);
       }
     } catch (err: any) {
       setError(err.message || "Google auth error.");
@@ -341,7 +358,61 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
   };
 
   return (
-    <div className="dark bg-[#030308] text-zinc-100 min-h-screen relative flex font-sans overflow-hidden">
+    <>
+      {/* ── Sign-In Transition Overlay ── */}
+      {signingIn && (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#030308]/97 backdrop-blur-md animate-fadeIn">
+          {/* Ambient glows */}
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-emerald-600/10 rounded-full blur-[140px] pointer-events-none" />
+          <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-indigo-600/8 rounded-full blur-[120px] pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col items-center gap-6 select-none text-center px-6">
+            {/* Dual-ring spinner */}
+            <div className="relative h-24 w-24">
+              <div className="absolute inset-0 rounded-full border-4 border-emerald-500/15" />
+              <div className="absolute inset-0 rounded-full border-4 border-t-emerald-500 border-r-transparent border-b-transparent border-l-transparent animate-spin" />
+              <div className="absolute inset-2 rounded-full border-2 border-t-transparent border-r-indigo-400/50 border-b-transparent border-l-transparent animate-spin" style={{ animationDirection: 'reverse', animationDuration: '0.9s' }} />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Sparkles className="h-8 w-8 text-emerald-400 animate-pulse" />
+              </div>
+            </div>
+
+            {/* Title */}
+            <div className="space-y-2">
+              <h2 className="text-2xl font-black text-white tracking-tight">
+                {signingInMsg.method === "google" ? "Connecting with Google" : "Signing you in"}
+                <span className="inline-flex gap-0.5 ml-1">
+                  <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
+                  <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
+                  <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
+                </span>
+              </h2>
+              <p className="text-sm text-zinc-400 font-semibold max-w-sm leading-relaxed">
+                {signingInMsg.method === "google"
+                  ? "Redirecting you securely via Google OAuth — making your experience smooth."
+                  : `Welcome back${signingInMsg.name ? ", " + signingInMsg.name.split(" ")[0] : ""}! Loading your workspace now.`}
+              </p>
+            </div>
+
+            {/* Identity pill */}
+            <div className="flex items-center gap-2.5 px-5 py-2.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm">
+              <div className="h-6 w-6 rounded-md bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-extrabold text-[10px]">
+                {signingInMsg.method === "google" ? "G" : signingInMsg.name ? signingInMsg.name.substring(0, 2).toUpperCase() : "AN"}
+              </div>
+              <span className="text-xs font-bold text-zinc-300 truncate max-w-[220px]">
+                {signingInMsg.method === "google" ? "Authenticating via Google" : signingInMsg.email}
+              </span>
+            </div>
+
+            {/* Progress bar */}
+            <div className="w-48 h-1 rounded-full bg-white/10 overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-emerald-500 to-indigo-500 rounded-full animate-pulse" style={{ width: '70%' }} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="dark bg-[#030308] text-zinc-100 min-h-screen relative flex font-sans overflow-hidden">
       {/* Ambient background glowing orbs */}
       <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-emerald-600/10 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none" />
@@ -667,5 +738,6 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
         </div>
       </div>
     </div>
+    </>
   );
 }

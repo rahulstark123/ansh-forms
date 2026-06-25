@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Sun, Moon, LogOut, Settings, User, ChevronDown, Search, FileText, Globe, Layers, BarChart3, CreditCard } from "lucide-react";
+import { Sun, Moon, LogOut, Settings, ChevronDown, Search, Sparkles } from "lucide-react";
 import { useUIStore } from "@/stores/ui-store";
 import { supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
@@ -18,23 +18,76 @@ export function AppHeader() {
   const setSearchOpen = useUIStore((state) => state.setSearchOpen);
   
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
   const handleSignOut = async () => {
+    setDropdownOpen(false);
+    setLoggingOut(true);
     try {
       await supabase.auth.signOut();
       setUser(null);
+      // Small delay so user sees the transition screen
+      await new Promise((r) => setTimeout(r, 1800));
       router.push("/login");
     } catch (err) {
       console.error("Sign out error:", err);
+      setLoggingOut(false);
     }
   };
 
   return (
-    <header className="h-16 border-b border-border bg-card px-6 flex items-center justify-between select-none relative z-40">
+    <>
+      {/* ── Logout Transition Overlay ── */}
+      {loggingOut && (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#030308]/95 backdrop-blur-md animate-fadeIn">
+          {/* Ambient glow */}
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
+          <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-indigo-600/8 rounded-full blur-[100px] pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col items-center gap-6 select-none text-center">
+            {/* Spinner ring */}
+            <div className="relative h-20 w-20">
+              <div className="absolute inset-0 rounded-full border-4 border-primary/20" />
+              <div className="absolute inset-0 rounded-full border-4 border-t-primary border-r-transparent border-b-transparent border-l-transparent animate-spin" />
+              <div className="absolute inset-2 rounded-full border-2 border-t-transparent border-r-primary/40 border-b-transparent border-l-transparent animate-spin" style={{ animationDirection: 'reverse', animationDuration: '0.8s' }} />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Sparkles className="h-7 w-7 text-primary animate-pulse" />
+              </div>
+            </div>
+
+            {/* Text */}
+            <div className="space-y-2">
+              <h2 className="text-2xl font-black text-white tracking-tight">
+                Logging you out
+                <span className="inline-flex gap-0.5 ml-1">
+                  <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
+                  <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
+                  <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
+                </span>
+              </h2>
+              <p className="text-sm text-zinc-400 font-semibold max-w-xs leading-relaxed">
+                Securing your session and clearing workspace data — see you soon!
+              </p>
+            </div>
+
+            {/* User pill */}
+            {user && (
+              <div className="flex items-center gap-2.5 px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm">
+                <div className="h-6 w-6 rounded-md bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-extrabold text-[10px]">
+                  {user.name ? user.name.substring(0, 2).toUpperCase() : "US"}
+                </div>
+                <span className="text-xs font-bold text-zinc-300 truncate max-w-[180px]">{user.email}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <header className="h-16 border-b border-border bg-card px-6 flex items-center justify-between select-none relative z-40">
       {/* Mock Search Trigger Input mimicking reference UI */}
       <div className="relative w-80 md:w-96 text-left">
         <button
@@ -148,5 +201,6 @@ export function AppHeader() {
         )}
       </div>
     </header>
+    </>
   );
 }
