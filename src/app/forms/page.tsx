@@ -59,6 +59,11 @@ export default function FormsPage() {
   const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
   const [nameCopied, setNameCopied] = useState(false);
 
+  // Rename Form Modal State
+  const [formToRename, setFormToRename] = useState<FormItem | null>(null);
+  const [renameTitle, setRenameTitle] = useState("");
+  const [renaming, setRenaming] = useState(false);
+
   useEffect(() => {
     fetchForms();
   }, []);
@@ -263,6 +268,44 @@ export default function FormsPage() {
     }
   };
 
+  const handleRenameForm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formToRename || !renameTitle.trim()) return;
+
+    setRenaming(true);
+    try {
+      const form = formToRename;
+      const res = await apiClient(`/api/forms/${form.id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          title: renameTitle,
+          description: form.description,
+          category: form.category,
+          isPublished: form.isPublished,
+          slug: form.slug,
+          fields: typeof form.fields === "string" ? JSON.parse(form.fields) : form.fields,
+          landingPage: typeof form.landingPage === "string" ? JSON.parse(form.landingPage) : form.landingPage,
+          settings: typeof form.settings === "string" ? JSON.parse(form.settings) : form.settings,
+        }),
+      });
+
+      if (res.ok) {
+        setFormToRename(null);
+        setRenameTitle("");
+        fetchForms();
+        useUIStore.getState().addGlobalAlert("success", "Form renamed successfully.");
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || "Failed to rename form.");
+      }
+    } catch (err: any) {
+      console.error("Rename form error:", err);
+      alert(err.message || "Failed to rename form.");
+    } finally {
+      setRenaming(false);
+    }
+  };
+
   const handleDuplicateForm = async (form: FormItem) => {
     try {
       const parsedFields = typeof form.fields === "string" ? JSON.parse(form.fields) : form.fields;
@@ -397,6 +440,20 @@ export default function FormsPage() {
               >
                 <Pencil className="h-4 w-4 text-slate-450 dark:text-slate-500" />
                 <span>Edit Form</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenActionMenuId(null);
+                  setFormToRename(form);
+                  setRenameTitle(form.title);
+                }}
+                className="w-full flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 text-left cursor-pointer transition-all"
+              >
+                <FileText className="h-4 w-4 text-slate-455 dark:text-slate-500" />
+                <span>Rename Form</span>
               </button>
 
               <button
@@ -1021,6 +1078,65 @@ export default function FormsPage() {
                 </div>
               </div>
             </div>
+          </div>
+        </Portal>
+      )}
+
+      {/* RENAME FORM MODAL */}
+      {formToRename && (
+        <Portal>
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/55 p-4 animate-fadeIn">
+            <div className="absolute inset-0" onClick={() => !renaming && setFormToRename(null)} aria-hidden />
+            
+            <form 
+              onSubmit={handleRenameForm}
+              className="bg-card w-full max-w-[480px] rounded-3xl border border-border shadow-2xl p-6 relative z-10 animate-fadeInDown flex flex-col"
+            >
+              <div className="flex items-center gap-3 mb-4 select-none">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                  <Pencil className="h-5 w-5" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 dark:text-zinc-150">Rename Form Canvas</h3>
+                  <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Specify a new display title for your form builder.</p>
+                </div>
+              </div>
+
+              <div className="space-y-4 text-left">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase text-slate-450 dark:text-slate-400 tracking-wider">
+                    Form Name Title
+                  </label>
+                  <input
+                    type="text"
+                    value={renameTitle}
+                    onChange={(e) => setRenameTitle(e.target.value)}
+                    placeholder="Enter new form title..."
+                    className="premium-input text-sm font-bold w-full"
+                    required
+                    disabled={renaming}
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 select-none">
+                  <button
+                    type="button"
+                    onClick={() => setFormToRename(null)}
+                    disabled={renaming}
+                    className="px-4 py-2.5 rounded-xl border border-border/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold uppercase tracking-wider cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={renaming || !renameTitle.trim() || renameTitle === formToRename.title}
+                    className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-black text-xs uppercase tracking-wider hover:opacity-90 disabled:opacity-50 cursor-pointer transition-all"
+                  >
+                    {renaming ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         </Portal>
       )}
