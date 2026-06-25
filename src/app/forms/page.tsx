@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Plus, Eye, BarChart3, Trash2, Copy, Archive, Check, FileText, Sparkles, Search, ArrowRight, Layers, Pencil, AlertTriangle, ChevronDown, LayoutGrid, List } from "lucide-react";
+import { Plus, Eye, BarChart3, Trash2, Copy, Archive, Check, FileText, Sparkles, Search, ArrowRight, Layers, Pencil, AlertTriangle, ChevronDown, LayoutGrid, List, MoreVertical } from "lucide-react";
 import { useUIStore } from "@/stores/ui-store";
 import { FORM_TEMPLATES } from "@/config/templates";
 import { cn } from "@/lib/utils";
@@ -42,6 +42,7 @@ export default function FormsPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>("All");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [openActionMenuId, setOpenActionMenuId] = useState<string | null>(null);
 
   // Form Creation Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -351,6 +352,150 @@ export default function FormsPage() {
     return matchesSearch;
   });
 
+  const renderActionDropdown = (form: FormItem, isTable: boolean = false) => {
+    const parsedSettings = typeof form.settings === "string" ? JSON.parse(form.settings) : form.settings || {};
+    const isArchived = !!parsedSettings.isArchived;
+
+    return (
+      <div className="relative inline-block text-left">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpenActionMenuId(openActionMenuId === form.id ? null : form.id);
+          }}
+          className={cn(
+            "h-8 w-8 rounded-xl border border-border hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-450 hover:text-slate-700 dark:hover:text-zinc-205 cursor-pointer transition-colors outline-none",
+            openActionMenuId === form.id && "bg-slate-100 dark:bg-slate-800 border-primary/40 text-primary"
+          )}
+        >
+          <MoreVertical className="h-4.5 w-4.5" />
+        </button>
+
+        {openActionMenuId === form.id && (
+          <>
+            <div 
+              className="fixed inset-0 z-30 bg-transparent" 
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenActionMenuId(null);
+              }} 
+            />
+            
+            <div className={cn(
+              "absolute mt-1.5 w-44 rounded-xl border border-border bg-card p-1.5 shadow-lg z-45 animate-fadeInDown select-none text-left",
+              isTable ? "right-0 top-full origin-top-right" : "right-0 bottom-full mb-1.5 origin-bottom-right"
+            )}>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenActionMenuId(null);
+                  router.push(`/forms/${form.id}/edit`);
+                }}
+                className="w-full flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 text-left cursor-pointer transition-all"
+              >
+                <Pencil className="h-4 w-4 text-slate-450 dark:text-slate-500" />
+                <span>Edit Form</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenActionMenuId(null);
+                  router.push(`/forms/${form.id}/view`);
+                }}
+                className="w-full flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 text-left cursor-pointer transition-all"
+              >
+                <Eye className="h-4 w-4 text-slate-455 dark:text-slate-500" />
+                <span>View Live</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenActionMenuId(null);
+                  router.push(`/forms/${form.id}/responses`);
+                }}
+                className="w-full flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 text-left cursor-pointer transition-all"
+              >
+                <BarChart3 className="h-4 w-4 text-slate-455 dark:text-slate-500" />
+                <span>Analytics</span>
+              </button>
+
+              {form.isPublished && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCopyLink(form.slug);
+                  }}
+                  className="w-full flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 text-left cursor-pointer transition-all"
+                >
+                  {copiedId === form.slug ? (
+                    <>
+                      <Check className="h-4 w-4 text-emerald-500" />
+                      <span className="text-emerald-600 dark:text-emerald-450">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4 text-slate-455 dark:text-slate-500" />
+                      <span>Copy Link</span>
+                    </>
+                  )}
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenActionMenuId(null);
+                  handleDuplicateForm(form);
+                }}
+                className="w-full flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 text-left cursor-pointer transition-all"
+              >
+                <Copy className="h-4 w-4 text-slate-455 dark:text-slate-500" />
+                <span>Duplicate</span>
+              </button>
+
+              <div className="h-[1px] bg-border/60 my-1" />
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenActionMenuId(null);
+                  handleToggleArchive(form);
+                }}
+                className="w-full flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 text-left cursor-pointer transition-all"
+              >
+                <Archive className={cn("h-4 w-4", isArchived ? "text-amber-500" : "text-slate-450 dark:text-slate-500")} />
+                <span>{isArchived ? "Unarchive" : "Archive"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenActionMenuId(null);
+                  setFormToDelete(form);
+                  setDeleteConfirmationText("");
+                }}
+                className="w-full flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-955/20 text-left cursor-pointer transition-all"
+              >
+                <Trash2 className="h-4 w-4 text-rose-400" />
+                <span>Delete Form</span>
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-8 animate-fadeIn">
       {/* Header Banner */}
@@ -520,68 +665,11 @@ export default function FormsPage() {
                 </div>
 
                 {/* Card Actions Row */}
-                <div className="flex items-center justify-between border-t border-border/40 pt-4 mt-6 select-none">
-                  <div className="flex gap-1.5">
-                    {form.isPublished && (
-                      <Tooltip content="Copy Public Link">
-                        <button
-                          onClick={() => handleCopyLink(form.slug)}
-                          className="h-9 w-9 rounded-xl border border-border hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 cursor-pointer transition-colors"
-                        >
-                          {copiedId === form.slug ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
-                        </button>
-                      </Tooltip>
-                    )}
-                    <Tooltip content="Edit Form">
-                      <button
-                        onClick={() => router.push(`/forms/${form.id}/edit`)}
-                        className="h-9 w-9 rounded-xl border border-border hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 cursor-pointer transition-colors"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </button>
-                    </Tooltip>
-                    <Tooltip content="View Form">
-                      <button
-                        onClick={() => router.push(`/forms/${form.id}/view`)}
-                        className="h-9 w-9 rounded-xl border border-border hover:bg-sky-50 dark:hover:bg-sky-950/20 flex items-center justify-center text-slate-400 hover:text-sky-500 cursor-pointer transition-colors"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </button>
-                    </Tooltip>
-                    <Tooltip content="Analytics / Submissions">
-                      <button
-                        onClick={() => router.push(`/forms/${form.id}/responses`)}
-                        className="h-9 w-9 rounded-xl border border-border hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 cursor-pointer transition-colors"
-                      >
-                        <BarChart3 className="h-4 w-4" />
-                      </button>
-                    </Tooltip>
-                  </div>
-
-                  <div className="flex gap-1.5">
-                    <Tooltip content={isArchived ? "Unarchive Form" : "Archive Form"}>
-                      <button
-                        onClick={() => handleToggleArchive(form)}
-                        className={cn(
-                          "h-9 w-9 rounded-xl border border-border hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center cursor-pointer transition-colors",
-                          isArchived ? "text-amber-500 bg-amber-500/5 border-amber-500/20" : "text-slate-450"
-                        )}
-                      >
-                        <Archive className="h-4 w-4" />
-                      </button>
-                    </Tooltip>
-                    <Tooltip content="Delete Form">
-                      <button
-                        onClick={() => {
-                          setFormToDelete(form);
-                          setDeleteConfirmationText("");
-                        }}
-                        className="h-9 w-9 rounded-xl border border-border hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center text-slate-450 hover:text-rose-500 cursor-pointer transition-colors"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </Tooltip>
-                  </div>
+                <div className="flex items-center justify-between border-t border-border/40 pt-4 mt-6 select-none relative">
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+                    Actions
+                  </span>
+                  {renderActionDropdown(form, false)}
                 </div>
               </div>
             );
@@ -589,7 +677,7 @@ export default function FormsPage() {
         </div>
       ) : (
         /* ── TABLE VIEW ── */
-        <div className="crm-card bg-card border-border overflow-hidden">
+        <div className="crm-card bg-card border-border overflow-visible">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-border/50 bg-slate-50/50 dark:bg-[#121625]/40 text-[10px] font-black uppercase tracking-wider text-slate-400 select-none">
@@ -658,61 +746,9 @@ export default function FormsPage() {
                     </td>
 
                     {/* Actions */}
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-1 justify-end">
-                        {form.isPublished && (
-                          <Tooltip content="Copy Public Link">
-                            <button
-                              onClick={() => handleCopyLink(form.slug)}
-                              className="h-7 w-7 rounded-lg border border-border hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-700 cursor-pointer transition-colors"
-                            >
-                              {copiedId === form.slug ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-                            </button>
-                          </Tooltip>
-                        )}
-                        <Tooltip content="Edit Form">
-                          <button
-                            onClick={() => router.push(`/forms/${form.id}/edit`)}
-                            className="h-7 w-7 rounded-lg border border-border hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-700 cursor-pointer transition-colors"
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </button>
-                        </Tooltip>
-                        <Tooltip content="View Form">
-                          <button
-                            onClick={() => router.push(`/forms/${form.id}/view`)}
-                            className="h-7 w-7 rounded-lg border border-border hover:bg-sky-50 dark:hover:bg-sky-950/20 flex items-center justify-center text-slate-400 hover:text-sky-500 cursor-pointer transition-colors"
-                          >
-                            <Eye className="h-3.5 w-3.5" />
-                          </button>
-                        </Tooltip>
-                        <Tooltip content="Responses">
-                          <button
-                            onClick={() => router.push(`/forms/${form.id}/responses`)}
-                            className="h-7 w-7 rounded-lg border border-border hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-700 cursor-pointer transition-colors"
-                          >
-                            <BarChart3 className="h-3.5 w-3.5" />
-                          </button>
-                        </Tooltip>
-                        <Tooltip content={isArchived ? "Unarchive" : "Archive"}>
-                          <button
-                            onClick={() => handleToggleArchive(form)}
-                            className={cn(
-                              "h-7 w-7 rounded-lg border border-border hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center cursor-pointer transition-colors",
-                              isArchived ? "text-amber-500 bg-amber-500/5 border-amber-500/20" : "text-slate-400"
-                            )}
-                          >
-                            <Archive className="h-3.5 w-3.5" />
-                          </button>
-                        </Tooltip>
-                        <Tooltip content="Delete">
-                          <button
-                            onClick={() => { setFormToDelete(form); setDeleteConfirmationText(""); }}
-                            className="h-7 w-7 rounded-lg border border-border hover:bg-rose-50 dark:hover:bg-rose-950/20 flex items-center justify-center text-slate-400 hover:text-rose-500 cursor-pointer transition-colors"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </Tooltip>
+                    <td className="px-5 py-3.5 relative">
+                      <div className="flex items-center justify-end">
+                        {renderActionDropdown(form, true)}
                       </div>
                     </td>
                   </tr>
