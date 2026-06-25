@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, BarChart3, Settings, CreditCard, Layers, ChevronLeft, ChevronRight, Palette, Sun, Moon, Check, X } from "lucide-react";
+import { LayoutDashboard, FileText, BarChart3, Settings, CreditCard, Layers, ChevronLeft, ChevronRight, Palette, Sun, Moon, Check, X, LifeBuoy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
 
@@ -27,6 +27,7 @@ export function MainSidebar() {
     { label: "Analytics", href: "/analytics", icon: BarChart3 },
     { label: "Settings", href: "/settings", icon: Settings },
     { label: "Pricing", href: "/pricing", icon: CreditCard },
+    { label: "Support", href: "/support", icon: LifeBuoy },
   ];
 
   const accents = [
