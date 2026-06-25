@@ -109,7 +109,7 @@ export const useUIStore = create<UIStore>((set) => ({
   user: null,
   setUser: (user) => set({ user }),
 
-  isOffline: typeof navigator !== "undefined" ? !navigator.onLine : false,
+  isOffline: false, // Always start online — real offline/online events update this
   setIsOffline: (isOffline) => set({ isOffline }),
 
   globalAlerts: [],
