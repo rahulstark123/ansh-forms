@@ -133,6 +133,8 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
 
   // Authentication Switch State
   const [isSignUp, setIsSignUp] = useState(initialIsSignUp);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -189,10 +191,43 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
     e.preventDefault();
     setError("");
 
-    if (isSignUp) {
+    if (isForgotPassword) {
+      handleForgotPasswordSubmit();
+    } else if (isSignUp) {
       handleSignUpSubmit();
     } else {
       handleSignInSubmit();
+    }
+  };
+
+  const handleForgotPasswordSubmit = async () => {
+    if (!email) {
+      setError("Please enter your email address.");
+      return;
+    }
+
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (resetError) {
+        setError(resetError.message);
+        setIsLoading(false);
+        return;
+      }
+
+      setResetEmailSent(true);
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred while sending reset link.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -354,6 +389,7 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
 
   const toggleAuthMode = () => {
     setError("");
+    setIsForgotPassword(false);
     setIsSignUp(!isSignUp);
   };
 
@@ -499,47 +535,82 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
             </span>
           </div>
         </div>
-
-        <div className="w-full max-w-[380px] space-y-5 animate-fadeIn">
-          
-          {/* Section title toggles */}
-          <div className="space-y-1.5 text-center lg:text-left select-none">
-            <h2 className="text-xl xl:text-2xl font-black text-zinc-900 tracking-tight">
-              {isSignUp ? "Create Your Account" : "Welcome Back"}
-            </h2>
-            <p className="text-xs text-zinc-500 font-semibold">
-              {isSignUp 
-                ? "Register details to secure your forms builder workspace." 
-                : "Enter credentials to access your forms dashboard."}
-            </p>
+           {resetEmailSent ? (
+          <div className="w-full max-w-[380px] space-y-6 text-center animate-fadeIn">
+            <div className="mx-auto h-16 w-16 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/25">
+              <Mail className="h-8 w-8 text-emerald-500 animate-pulse" />
+            </div>
+            <div className="space-y-2 select-none">
+              <h2 className="text-xl xl:text-2xl font-black text-zinc-900 tracking-tight animate-fadeInDown">
+                Reset Link Sent!
+              </h2>
+              <p className="text-xs text-zinc-500 font-semibold leading-relaxed">
+                We've sent a secure password reset link to <span className="text-zinc-950 font-bold">{email}</span>. Please check your inbox and click the link to update your password.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setIsForgotPassword(false);
+                setResetEmailSent(false);
+                setError("");
+              }}
+              className="w-full py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white font-extrabold text-xs uppercase tracking-widest transition-all duration-300 shadow-md flex items-center justify-center gap-2 cursor-pointer mt-2"
+            >
+              Back to Sign In
+            </button>
           </div>
+        ) : (
+          <div className="w-full max-w-[380px] space-y-5 animate-fadeIn">
+            
+            {/* Section title toggles */}
+            <div className="space-y-1.5 text-center lg:text-left select-none">
+              <h2 className="text-xl xl:text-2xl font-black text-zinc-900 tracking-tight">
+                {isForgotPassword 
+                  ? "Reset Your Password" 
+                  : isSignUp 
+                    ? "Create Your Account" 
+                    : "Welcome Back"}
+              </h2>
+              <p className="text-xs text-zinc-500 font-semibold">
+                {isForgotPassword
+                  ? "Enter your email address to receive a secure password recovery link."
+                  : isSignUp 
+                    ? "Register details to secure your forms builder workspace." 
+                    : "Enter credentials to access your forms dashboard."}
+              </p>
+            </div>
 
-          {/* Social login option */}
-          <button
-            type="button"
-            onClick={handleGoogleLogin}
-            disabled={isGoogleLoading || isLoading}
-            className="w-full py-2.5 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-50 text-xs font-bold uppercase tracking-wider text-zinc-700 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:pointer-events-none shadow-sm hover:shadow"
-          >
-            {isGoogleLoading ? (
-              <span className="flex items-center gap-2">
-                <span className="h-4 w-4 border-2 border-zinc-400 border-t-zinc-700 rounded-full animate-spin" />
-                Connecting...
-              </span>
-            ) : (
-              <>
-                <GoogleIcon />
-                <span>Continue with Google</span>
-              </>
+            {/* Social login option */}
+            {!isForgotPassword && (
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                disabled={isGoogleLoading || isLoading}
+                className="w-full py-2.5 rounded-xl bg-white border border-zinc-200 hover:bg-zinc-50 text-xs font-bold uppercase tracking-wider text-zinc-700 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:pointer-events-none shadow-sm hover:shadow"
+              >
+                {isGoogleLoading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="h-4 w-4 border-2 border-zinc-400 border-t-zinc-700 rounded-full animate-spin" />
+                    Connecting...
+                  </span>
+                ) : (
+                  <>
+                    <GoogleIcon />
+                    <span>Continue with Google</span>
+                  </>
+                )}
+              </button>
             )}
-          </button>
 
-          {/* Divider */}
-          <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-wider text-zinc-400 select-none">
-            <div className="h-[1px] bg-zinc-200 flex-1" />
-            <span>or continue with email</span>
-            <div className="h-[1px] bg-zinc-200 flex-1" />
-          </div>
+            {/* Divider */}
+            {!isForgotPassword && (
+              <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-wider text-zinc-400 select-none">
+                <div className="h-[1px] bg-zinc-200 flex-1" />
+                <span>or continue with email</span>
+                <div className="h-[1px] bg-zinc-200 flex-1" />
+              </div>
+            )}
 
           {/* Error Message */}
           {error && (
@@ -591,36 +662,45 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
             </div>
 
             {/* 3. Password field */}
-            <div className="space-y-1">
-              <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest block">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                <input 
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-11 pr-11 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 focus:border-primary/50 text-sm font-semibold text-zinc-900 outline-none transition-all placeholder:text-zinc-400 focus:bg-white"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              {!isSignUp && (
-                <div className="flex justify-end pt-1">
-                  <a href="#" className="text-[9px] font-black text-emerald-600 hover:text-emerald-500 uppercase tracking-widest transition-colors">
-                    Forgot Password?
-                  </a>
+            {!isForgotPassword && (
+              <div className="space-y-1 animate-fadeIn">
+                <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest block">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                  <input 
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full pl-11 pr-11 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 focus:border-primary/50 text-sm font-semibold text-zinc-900 outline-none transition-all placeholder:text-zinc-400 focus:bg-white"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
-              )}
-            </div>
+                {!isSignUp && (
+                  <div className="flex justify-end pt-1 animate-fadeIn">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsForgotPassword(true);
+                        setError("");
+                      }}
+                      className="text-[9px] font-black text-emerald-600 hover:text-emerald-500 uppercase tracking-widest transition-colors cursor-pointer bg-transparent border-none p-0 outline-none"
+                    >
+                      Forgot Password?
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* 3b. Confirm Password field (Only on Sign Up) */}
             {isSignUp && (
@@ -713,11 +793,11 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
               {isLoading ? (
                 <span className="flex items-center gap-2">
                   <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Verifying...
+                  {isForgotPassword ? "Sending Link..." : "Verifying..."}
                 </span>
               ) : (
                 <span className="flex items-center gap-1.5">
-                  {isSignUp ? "Register Workspace" : "Sign In"} 
+                  {isForgotPassword ? "Send Reset Link" : isSignUp ? "Register Workspace" : "Sign In"} 
                   <ArrowRight className="h-3.5 w-3.5" />
                 </span>
               )}
@@ -726,16 +806,35 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
 
           {/* Toggle Link */}
           <p className="text-center text-xs text-zinc-500 font-semibold uppercase tracking-wider mt-4">
-            {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-            <button
-              onClick={toggleAuthMode}
-              type="button"
-              className="text-emerald-600 hover:text-emerald-500 font-black transition-colors cursor-pointer"
-            >
-              {isSignUp ? "Sign In" : "Sign Up"}
-            </button>
+            {isForgotPassword ? (
+              <>
+                Remember your password?{" "}
+                <button
+                  onClick={() => {
+                    setIsForgotPassword(false);
+                    setError("");
+                  }}
+                  type="button"
+                  className="text-emerald-600 hover:text-emerald-500 font-black transition-colors cursor-pointer bg-transparent border-none p-0 outline-none"
+                >
+                  Sign In
+                </button>
+              </>
+            ) : (
+              <>
+                {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+                <button
+                  onClick={toggleAuthMode}
+                  type="button"
+                  className="text-emerald-600 hover:text-emerald-500 font-black transition-colors cursor-pointer bg-transparent border-none p-0 outline-none"
+                >
+                  {isSignUp ? "Sign In" : "Sign Up"}
+                </button>
+              </>
+            )}
           </p>
         </div>
+        )}
       </div>
     </div>
     </>

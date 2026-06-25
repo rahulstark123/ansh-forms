@@ -67,7 +67,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           } else {
             if (mounted) {
               setUser(null);
-              if (pathname !== "/login" && pathname !== "/signup") {
+              if (pathname !== "/login" && pathname !== "/signup" && pathname !== "/reset-password") {
                 router.push("/login");
               }
             }
@@ -111,7 +111,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         if (!isUiOnlyMode()) {
           if (mounted) {
             setUser(null);
-            router.push("/login");
+            if (pathname !== "/reset-password") {
+              router.push("/login");
+            }
           }
         }
       }

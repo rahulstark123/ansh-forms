@@ -36,7 +36,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
 
   // Public and Auth routes that don't need the dashboard sidebar shell
   const isMarketingHome = pathname === "/";
-  const isAuthRoute = pathname === "/login" || pathname === "/signup";
+  const isAuthRoute = pathname === "/login" || pathname === "/signup" || pathname === "/reset-password";
   const isPublicRoute = pathname.startsWith("/f/") || pathname.startsWith("/p/");
   const isLegalRoute = pathname === "/privacy" || pathname === "/terms";
   const isOnboardingRoute = pathname === "/onboarding";
