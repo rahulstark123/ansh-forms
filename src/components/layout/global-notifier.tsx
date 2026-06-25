@@ -159,18 +159,31 @@ export function GlobalNotifier() {
 
   // Monitor network status
   useEffect(() => {
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
+    // Debounce offline detection — avoids false flash during page load/navigation
+    let offlineTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const handleOnline = () => {
+      if (offlineTimer) clearTimeout(offlineTimer);
+      setIsOffline(false);
+    };
+
+    const handleOffline = () => {
+      // Wait 500ms before marking offline — ignores transient blips on load
+      offlineTimer = setTimeout(() => {
+        setIsOffline(true);
+      }, 500);
+    };
 
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
 
-    // Initial state check
-    setIsOffline(!navigator.onLine);
+    // Do NOT check navigator.onLine on mount — it causes a false flash
+    // during SSR hydration and page transitions. Only real events matter.
 
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
+      if (offlineTimer) clearTimeout(offlineTimer);
     };
   }, [setIsOffline]);
 
