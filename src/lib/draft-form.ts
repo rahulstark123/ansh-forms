@@ -30,6 +30,7 @@ export interface DraftFormInput {
     coverUrl?: string;
     thankYouTitle?: string;
     thankYouMessage?: string;
+    requiresApproval?: boolean;
     headerEnabled?: boolean;
     headerTitle?: string;
     headerSubtitle?: string;
@@ -103,6 +104,7 @@ export function buildDraftForm(input: DraftFormInput): DraftFormState {
       brandColor: "emerald",
       thankYouTitle: "Thank You!",
       thankYouMessage: "Your submission has been recorded.",
+      requiresApproval: false,
       headerEnabled: true,
       headerTitle: title,
       headerSubtitle: description || "Complete the form below.",

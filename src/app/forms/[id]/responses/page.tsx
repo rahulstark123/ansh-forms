@@ -4,14 +4,37 @@ import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useUIStore } from "@/stores/ui-store";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from "recharts";
 import {
   Download, Search, Clock, Calendar, CheckCircle2, AlertCircle, XCircle,
-  Eye, RefreshCw, X, ChevronRight, MessageSquare, Star
+  RefreshCw, X, ChevronRight, MessageSquare, Star, TrendingUp, Inbox
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getCurrencySymbol } from "@/lib/currencies";
+import {
+  CHART_COLORS,
+  ChartCard,
+  ChartTooltip,
+  DonutCenter,
+} from "@/components/analytics/chart-ui";
+
+const AXIS_TICK = { fontSize: 10, fontWeight: 600, fill: "var(--muted-foreground)" };
+const GRID_STROKE = "var(--border)";
+const STATUS_COLORS = ["#3b82f6", "#f59e0b", "#10b981", "#ef4444"];
+const CHOICE_COLORS = [CHART_COLORS.responses, CHART_COLORS.views, CHART_COLORS.accent, CHART_COLORS.amber, "#ec4899", "#06b6d4"];
 
 interface Submission {
   id: string;
@@ -29,6 +52,7 @@ export default function ResponsesPage() {
 
   const activeForm = useUIStore((state) => state.activeForm);
   const setActiveForm = useUIStore((state) => state.setActiveForm);
+  const requiresApproval = activeForm?.settings?.requiresApproval === true;
 
   // States
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -130,7 +154,10 @@ export default function ResponsesPage() {
     if (!activeForm || submissions.length === 0) return;
 
     // Header fields
-    const headers = ["Submission ID", "Submitted Date", "Workflow Status", "Feedback Notes"];
+    const headers = ["Submission ID", "Submitted Date"];
+    if (requiresApproval) {
+      headers.push("Workflow Status", "Feedback Notes");
+    }
     activeForm.fields.forEach((f) => {
       headers.push(f.label || f.id);
     });
@@ -141,9 +168,13 @@ export default function ResponsesPage() {
       const row = [
         sub.customId,
         new Date(sub.createdAt).toLocaleDateString("en-IN"),
-        sub.status,
-        `"${(sub.statusComment || "").replace(/"/g, '""')}"`,
       ];
+      if (requiresApproval) {
+        row.push(
+          sub.status,
+          `"${(sub.statusComment || "").replace(/"/g, '""')}"`,
+        );
+      }
 
       activeForm.fields.forEach((f) => {
         const ans = sub.answers[f.id];
@@ -185,31 +216,48 @@ export default function ResponsesPage() {
   });
 
   // ANALYTICS COMPUTATIONS
-  // 1. Completion status counts
-  const statusCounts = submissions.reduce(
-    (acc, curr) => {
-      acc[curr.status] = (acc[curr.status] || 0) + 1;
-      return acc;
-    },
-    { Submitted: 0, "Under Review": 0, Approved: 0, Rejected: 0 } as Record<string, number>
-  );
+  // 1. Completion status counts (approval forms only)
+  const statusCounts = requiresApproval
+    ? submissions.reduce(
+        (acc, curr) => {
+          acc[curr.status] = (acc[curr.status] || 0) + 1;
+          return acc;
+        },
+        { Submitted: 0, "Under Review": 0, Approved: 0, Rejected: 0 } as Record<string, number>
+      )
+    : null;
 
-  const statusData = Object.entries(statusCounts).map(([name, value]) => ({ name, value }));
-  const COLORS = ["#3b82f6", "#f59e0b", "#10b981", "#ef4444"];
+  const statusData = statusCounts ? Object.entries(statusCounts).map(([name, value]) => ({ name, value })) : [];
 
-  // 2. Submissions over time (Grouped by date)
-  const dateCounts = submissions.reduce((acc, curr) => {
-    const dateStr = new Date(curr.createdAt).toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
+  // 2. Submissions over time (chronological)
+  const timeData = (() => {
+    const buckets = new Map<string, { count: number; ts: number }>();
+    submissions.forEach((sub) => {
+      const d = new Date(sub.createdAt);
+      const key = d.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
+      const dayTs = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+      const existing = buckets.get(key);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        buckets.set(key, { count: 1, ts: dayTs });
+      }
     });
-    acc[dateStr] = (acc[dateStr] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+    return Array.from(buckets.entries())
+      .map(([date, { count, ts }]) => ({ date, submissions: count, ts }))
+      .sort((a, b) => a.ts - b.ts)
+      .map(({ date, submissions }) => ({ date, submissions }));
+  })();
 
-  const timeData = Object.entries(dateCounts)
-    .reverse()
-    .map(([date, count]) => ({ date, submissions: count }));
+  const last7Days = submissions.filter((sub) => {
+    const diff = Date.now() - new Date(sub.createdAt).getTime();
+    return diff <= 7 * 24 * 60 * 60 * 1000;
+  }).length;
+
+  const approvalRate =
+    requiresApproval && statusCounts
+      ? Math.round(((statusCounts.Approved || 0) / Math.max(submissions.length, 1)) * 100)
+      : null;
 
   // 3. Question specific charts (e.g. choice distributions)
   // Let's find choice fields
@@ -230,8 +278,20 @@ export default function ResponsesPage() {
     return Object.entries(dist).map(([name, value]) => ({ name, value }));
   };
 
+  const getRatingDistribution = (fieldId: string, maxRating: number) => {
+    const dist: Record<number, number> = {};
+    for (let i = 1; i <= maxRating; i++) dist[i] = 0;
+    submissions.forEach((sub) => {
+      const val = Number(sub.answers[fieldId]);
+      if (!isNaN(val) && val >= 1 && val <= maxRating) {
+        dist[val] = (dist[val] || 0) + 1;
+      }
+    });
+    return Object.entries(dist).map(([name, value]) => ({ name, value }));
+  };
+
   // 4. Rating averages
-  const ratingFields = activeForm?.fields.filter((f) => f.type === "rating") || [];
+  const ratingFields = activeForm?.fields.filter((f) => ["rating", "scale"].includes(f.type)) || [];
   const getRatingAverage = (fieldId: string) => {
     let sum = 0;
     let count = 0;
@@ -323,133 +383,227 @@ export default function ResponsesPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            
-            {/* Visual Charts row */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              
-              {/* Submission timeline chart */}
-              <div className="lg:col-span-2 crm-card p-5 bg-card border-border flex flex-col h-80">
-                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-4">
-                  Submissions Timeline
-                </span>
-                <div className="flex-1 w-full h-full text-xs font-semibold">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={timeData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="date" />
-                      <YAxis allowDecimals={false} />
-                      <Tooltip />
-                      <Bar dataKey="submissions" fill="var(--primary)" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+            {/* KPI summary */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="crm-card p-5 bg-card border-border">
+                <div className="flex justify-between items-start">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Responses</span>
+                  <Inbox className="h-4 w-4 text-emerald-500" />
                 </div>
+                <h2 className="text-3xl font-black text-emerald-500 mt-3">{submissions.length}</h2>
+                <p className="text-[10px] font-semibold text-slate-400 mt-2">All time submissions</p>
               </div>
-
-              {/* Status Timelines donut */}
-              <div className="crm-card p-5 bg-card border-border flex flex-col h-80 items-center justify-between">
-                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block w-full mb-1">
-                  Timeline Status Allocation
-                </span>
-                
-                <div className="flex-1 w-full h-full relative flex items-center justify-center font-bold text-xs">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={statusData}
-                        innerRadius={60}
-                        outerRadius={80}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {statusData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  
-                  {/* Total indicator inside donut */}
-                  <div className="absolute text-center select-none">
-                    <div className="text-xl font-black text-slate-800 dark:text-zinc-100">{submissions.length}</div>
-                    <div className="text-[9px] uppercase tracking-wider text-slate-400 font-extrabold">Total</div>
+              <div className="crm-card p-5 bg-card border-border">
+                <div className="flex justify-between items-start">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Last 7 Days</span>
+                  <TrendingUp className="h-4 w-4 text-sky-500" />
+                </div>
+                <h2 className="text-3xl font-black text-sky-500 mt-3">{last7Days}</h2>
+                <p className="text-[10px] font-semibold text-slate-400 mt-2">Recent activity</p>
+              </div>
+              <div className="crm-card p-5 bg-card border-border">
+                <div className="flex justify-between items-start">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Form Views</span>
+                  <Star className="h-4 w-4 text-violet-500" />
+                </div>
+                <h2 className="text-3xl font-black text-violet-500 mt-3">{activeForm?.views || 0}</h2>
+                <p className="text-[10px] font-semibold text-slate-400 mt-2">Public page visits</p>
+              </div>
+              {approvalRate !== null ? (
+                <div className="crm-card p-5 bg-card border-border">
+                  <div className="flex justify-between items-start">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Approval Rate</span>
+                    <CheckCircle2 className="h-4 w-4 text-amber-500" />
+                  </div>
+                  <h2 className="text-3xl font-black text-amber-500 mt-3">{approvalRate}%</h2>
+                  <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                    <div className="h-full rounded-full bg-amber-500" style={{ width: `${approvalRate}%` }} />
                   </div>
                 </div>
-
-                {/* Status legends */}
-                <div className="grid grid-cols-2 gap-4 text-[10px] font-extrabold w-full pt-4 border-t border-border/40">
-                  {Object.entries(statusCounts).map(([k, v], idx) => (
-                    <div key={k} className="flex items-center gap-1.5 truncate">
-                      <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: COLORS[idx] }} />
-                      <span className="text-slate-500 truncate">{k}:</span>
-                      <span className="text-slate-800 dark:text-zinc-300 font-mono font-black">{v}</span>
-                    </div>
-                  ))}
+              ) : (
+                <div className="crm-card p-5 bg-card border-border">
+                  <div className="flex justify-between items-start">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Avg / Day</span>
+                    <TrendingUp className="h-4 w-4 text-primary" />
+                  </div>
+                  <h2 className="text-3xl font-black text-primary mt-3">
+                    {timeData.length > 0
+                      ? (submissions.length / timeData.length).toFixed(1)
+                      : "0"}
+                  </h2>
+                  <p className="text-[10px] font-semibold text-slate-400 mt-2">Across active days</p>
                 </div>
-              </div>
-
+              )}
             </div>
 
-            {/* Ratings and choice frequencies summaries */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
-              {/* Choice lists frequency cards */}
-              {choiceFields.slice(0, 4).map((field) => {
-                const data = getFieldChoiceDistribution(field.id);
-                return (
-                  <div key={field.id} className="crm-card p-5 bg-card border-border">
-                    <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-4 truncate">
-                      {field.label} Choice allocation
-                    </span>
-                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                      {data.length === 0 ? (
-                        <div className="text-xs text-slate-400 font-bold py-6 text-center select-none">No answers log data</div>
-                      ) : (
-                        data.map((item, idx) => {
-                          const percent = ((item.value / submissions.length) * 100).toFixed(0);
-                          return (
-                            <div key={idx} className="space-y-1">
-                              <div className="flex justify-between text-xs font-bold">
-                                <span className="text-slate-700 dark:text-zinc-200 truncate max-w-[200px]">{item.name}</span>
-                                <span className="text-slate-400">{item.value} ({percent}%)</span>
-                              </div>
-                              <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden border border-border/30">
-                                <div className="bg-primary h-full rounded-full" style={{ width: `${percent}%` }} />
-                              </div>
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
+            {/* Main charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <ChartCard
+                className={cn(requiresApproval ? "lg:col-span-2" : "lg:col-span-full", "h-auto")}
+                title="Submissions Over Time"
+                subtitle="Daily response trend"
+              >
+                <div className="h-72 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={timeData} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="responsesTimeline" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={CHART_COLORS.responses} stopOpacity={0.35} />
+                          <stop offset="100%" stopColor={CHART_COLORS.responses} stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={GRID_STROKE} opacity={0.5} />
+                      <XAxis dataKey="date" tick={AXIS_TICK} axisLine={false} tickLine={false} />
+                      <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} width={36} allowDecimals={false} />
+                      <Tooltip content={<ChartTooltip />} />
+                      <Area
+                        type="monotone"
+                        dataKey="submissions"
+                        name="Responses"
+                        stroke={CHART_COLORS.responses}
+                        fill="url(#responsesTimeline)"
+                        strokeWidth={2.5}
+                        dot={{ r: 3, fill: CHART_COLORS.responses, strokeWidth: 0 }}
+                        activeDot={{ r: 5 }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </ChartCard>
+
+              {requiresApproval && statusCounts && (
+                <ChartCard title="Workflow Status" subtitle="Approval pipeline breakdown">
+                  <div className="relative h-52 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={statusData}
+                          innerRadius={58}
+                          outerRadius={78}
+                          paddingAngle={4}
+                          dataKey="value"
+                          nameKey="name"
+                        >
+                          {statusData.map((_, index) => (
+                            <Cell key={`status-${index}`} fill={STATUS_COLORS[index % STATUS_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip content={<ChartTooltip />} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <DonutCenter total={submissions.length} label="Total" />
                   </div>
+                  <div className="mt-2 grid grid-cols-2 gap-2 border-t border-border/40 pt-3">
+                    {Object.entries(statusCounts).map(([k, v], idx) => (
+                      <div key={k} className="flex items-center gap-1.5 text-[10px] font-bold">
+                        <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: STATUS_COLORS[idx] }} />
+                        <span className="text-slate-500 truncate">{k}</span>
+                        <span className="ml-auto font-mono text-slate-800 dark:text-zinc-200">{v}</span>
+                      </div>
+                    ))}
+                  </div>
+                </ChartCard>
+              )}
+            </div>
+
+            {/* Field-level charts */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {choiceFields.slice(0, 4).map((field, fieldIdx) => {
+                const data = getFieldChoiceDistribution(field.id);
+                const pieData = data.slice(0, 6);
+                return (
+                  <ChartCard
+                    key={field.id}
+                    title={field.label}
+                    subtitle="Answer distribution"
+                  >
+                    {data.length === 0 ? (
+                      <p className="py-10 text-center text-xs font-bold text-slate-400">No answers yet</p>
+                    ) : data.length <= 4 ? (
+                      <div className="relative h-56 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <Pie
+                              data={pieData}
+                              dataKey="value"
+                              nameKey="name"
+                              innerRadius={48}
+                              outerRadius={72}
+                              paddingAngle={3}
+                            >
+                              {pieData.map((_, idx) => (
+                                <Cell key={`${field.id}-${idx}`} fill={CHOICE_COLORS[(fieldIdx + idx) % CHOICE_COLORS.length]} />
+                              ))}
+                            </Pie>
+                            <Tooltip content={<ChartTooltip />} />
+                            <Legend wrapperStyle={{ fontSize: 10, fontWeight: 600 }} />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                    ) : (
+                      <div className="h-56 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            layout="vertical"
+                            data={data.slice(0, 8)}
+                            margin={{ top: 4, right: 12, left: 4, bottom: 4 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={GRID_STROKE} opacity={0.5} />
+                            <XAxis type="number" tick={AXIS_TICK} axisLine={false} tickLine={false} allowDecimals={false} />
+                            <YAxis
+                              type="category"
+                              dataKey="name"
+                              tick={AXIS_TICK}
+                              axisLine={false}
+                              tickLine={false}
+                              width={88}
+                            />
+                            <Tooltip content={<ChartTooltip />} />
+                            <Bar
+                              dataKey="value"
+                              name="Responses"
+                              fill={CHOICE_COLORS[fieldIdx % CHOICE_COLORS.length]}
+                              radius={[0, 6, 6, 0]}
+                              maxBarSize={18}
+                            />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )}
+                  </ChartCard>
                 );
               })}
 
-              {/* Rating average cards */}
               {ratingFields.map((field) => {
+                const maxRating = field.type === "scale" ? (field.scaleMax ?? 10) : 5;
+                const dist = getRatingDistribution(field.id, maxRating);
                 const avg = getRatingAverage(field.id);
                 return (
-                  <div key={field.id} className="crm-card p-5 bg-card border-border flex items-center justify-between">
-                    <div>
-                      <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block truncate">
-                        Rating Averages
-                      </span>
-                      <h4 className="text-xs font-bold text-slate-800 dark:text-zinc-200 mt-1.5 truncate max-w-[200px]">
-                        {field.label}
-                      </h4>
+                  <ChartCard
+                    key={field.id}
+                    title={field.label}
+                    subtitle={`Average: ${avg} / ${maxRating}`}
+                  >
+                    <div className="h-56 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={dist} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={GRID_STROKE} opacity={0.5} />
+                          <XAxis dataKey="name" tick={AXIS_TICK} axisLine={false} tickLine={false} />
+                          <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} width={32} allowDecimals={false} />
+                          <Tooltip content={<ChartTooltip />} />
+                          <Bar
+                            dataKey="value"
+                            name="Count"
+                            fill={CHART_COLORS.amber}
+                            radius={[6, 6, 0, 0]}
+                            maxBarSize={36}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                      <div className="text-center">
-                        <div className="text-2xl font-black text-amber-500 font-mono leading-none">{avg}</div>
-                        <div className="text-[8px] uppercase tracking-wider text-slate-400 font-bold mt-1">Out of 5</div>
-                      </div>
-                      <Star className="h-8 w-8 text-amber-500 fill-amber-500 animate-float" />
-                    </div>
-                  </div>
+                  </ChartCard>
                 );
               })}
-
             </div>
 
           </div>
@@ -466,7 +620,7 @@ export default function ResponsesPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search answers, tracking reference ID, workflow status..."
+                placeholder={requiresApproval ? "Search answers, tracking reference ID, workflow status..." : "Search answers or reference ID..."}
                 className="w-full pl-11 pr-4 py-2 rounded-xl bg-card border border-border focus:border-primary/50 text-xs font-semibold outline-none placeholder:text-slate-400"
               />
             </div>
@@ -485,7 +639,7 @@ export default function ResponsesPage() {
                     <th className="px-6 py-4">Reference ID</th>
                     <th className="px-6 py-4">Submission Date</th>
                     <th className="px-6 py-4">Answers Preview</th>
-                    <th className="px-6 py-4">Workflow Status</th>
+                    {requiresApproval && <th className="px-6 py-4">Workflow Status</th>}
                     <th className="px-6 py-4 text-right">View Detail</th>
                   </tr>
                 </thead>
@@ -525,6 +679,7 @@ export default function ResponsesPage() {
                         </td>
 
                         {/* Workflow Status */}
+                        {requiresApproval && (
                         <td className="px-6 py-4 select-none">
                           <span className={cn(
                             "px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase border flex items-center gap-1 w-fit",
@@ -540,6 +695,7 @@ export default function ResponsesPage() {
                             <span>{sub.status}</span>
                           </span>
                         </td>
+                        )}
 
                         {/* Action details */}
                         <td className="px-6 py-4 text-right select-none">
@@ -600,7 +756,14 @@ export default function ResponsesPage() {
                   let isFile = field.type === "file" && val;
 
                   if (val !== undefined && val !== null && val !== "") {
-                    if (Array.isArray(val)) {
+                    if (field.type === "toggle") {
+                      displayVal = val === true ? "Yes" : val === false ? "No" : "Not provided";
+                    } else if (field.type === "consent") {
+                      displayVal = val === true ? "Agreed" : "Not agreed";
+                    } else if (field.type === "currency") {
+                      const sym = getCurrencySymbol(field.currencyCode, field.currencySymbol || "₹");
+                      displayVal = `${sym}${val}`;
+                    } else if (Array.isArray(val)) {
                       displayVal = val.join(", ");
                     } else {
                       displayVal = String(val);
@@ -633,7 +796,8 @@ export default function ResponsesPage() {
                 })}
               </div>
 
-              {/* Status Timelines Updator */}
+              {/* Status Timelines Updator — approval forms only */}
+              {requiresApproval && (
               <div className="pt-5 border-t border-border/40 space-y-4">
                 <span className="text-[10px] font-black text-primary uppercase tracking-widest block">
                   Workflow Tracking Status
@@ -680,6 +844,7 @@ export default function ResponsesPage() {
                   <span>{updatingStatus ? "Updating..." : "Update Application Status"}</span>
                 </button>
               </div>
+              )}
 
             </div>
           </div>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Sparkles, Wand2, FileText, Globe, Palette, Check, ArrowRight, HelpCircle, AlertCircle } from "lucide-react";
 import { useUIStore } from "@/stores/ui-store";
 import { cn } from "@/lib/utils";
+import { useWorkspaceSlug } from "@/hooks/use-workspace-slug";
 
 interface FormOption {
   id: string;
@@ -15,6 +16,7 @@ interface FormOption {
 export default function AIBuilderPage() {
   const router = useRouter();
   const user = useUIStore((state) => state.user);
+  const companySlug = useWorkspaceSlug();
 
   // Active tab: "form" or "landing"
   const [activeTab, setActiveTab] = useState<"form" | "landing">("form");
@@ -126,7 +128,7 @@ export default function AIBuilderPage() {
 
         const payload = {
           title: data.title || "AI Generated Landing Page",
-          description: `Landing Page connected to /f/${connectedFormSlug}`,
+          description: `Landing Page connected to /${companySlug || "…"}/${connectedFormSlug}`,
           fields: [], // landing pages do not contain questions directly
           landingPage: {
             enabled: true,
@@ -376,7 +378,7 @@ export default function AIBuilderPage() {
                     >
                       {forms.map((f) => (
                         <option key={f.id} value={f.slug}>
-                          {f.title} (/f/{f.slug})
+                          {f.title} (/{companySlug || "…"}/{f.slug})
                         </option>
                       ))}
                     </select>

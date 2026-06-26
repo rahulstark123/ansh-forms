@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { supabase } from "@/lib/supabase";
 import { FORM_TEMPLATES } from "@/config/templates";
+import { resolveUniqueWorkspaceSlug } from "@/lib/workspace-slug";
 
 async function getUserId(req: Request): Promise<string> {
   const authHeader = req.headers.get("Authorization");
@@ -45,9 +46,10 @@ export async function POST(req: Request) {
 
     // 3. Update Workspace Details
     if (workspaceName) {
+      const workspaceSlug = await resolveUniqueWorkspaceSlug(workspaceName, profile.wid);
       await db.workspace.update({
         where: { wid: profile.wid },
-        data: { name: workspaceName },
+        data: { name: workspaceName, slug: workspaceSlug },
       });
     }
 

@@ -7,12 +7,14 @@ generator client {
 }
 
 model Workspace {
-  id        Int       @id @default(autoincrement())
-  wid       Int       @unique
-  name      String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  profiles  Profile[]
+  id             Int       @id @default(autoincrement())
+  wid            Int       @unique
+  name           String
+  slug           String?   @unique
+  formCategories Json      @default("[]")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  profiles       Profile[]
 }
 
 model Profile {

@@ -7,6 +7,7 @@ import { useUIStore } from "@/stores/ui-store";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { FEATURES } from "@/config/features";
+import { useWorkspaceSlug } from "@/hooks/use-workspace-slug";
 
 interface SearchAsset {
   id: string;
@@ -19,6 +20,7 @@ export function SearchModal() {
   const router = useRouter();
   const searchOpen = useUIStore((state) => state.searchOpen);
   const setSearchOpen = useUIStore((state) => state.setSearchOpen);
+  const companySlug = useWorkspaceSlug();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -100,7 +102,7 @@ export function SearchModal() {
   // Combine results into a single navigable array
   const allResults = [
     ...filteredPages.map(p => ({ title: p.title, url: p.url, icon: p.icon, category: "PAGES", description: p.description })),
-    ...filteredForms.map(f => ({ title: f.title, url: `/forms/${f.id}/edit`, icon: FileText, category: "ACTIVE FORMS", description: `Active response form - url: /f/${f.slug}` })),
+    ...filteredForms.map(f => ({ title: f.title, url: `/forms/${f.id}/edit`, icon: FileText, category: "ACTIVE FORMS", description: `Active response form - url: /${companySlug || "…"}/${f.slug}` })),
     ...filteredLandings.map(l => ({ title: l.title, url: `/forms/${l.id}/edit`, icon: Globe, category: "LANDING PAGES", description: `Custom landing portal - url: /p/${l.slug}` }))
   ];
 

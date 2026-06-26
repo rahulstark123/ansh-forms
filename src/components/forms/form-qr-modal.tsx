@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Check, Copy, Download, QrCode, X } from "lucide-react";
 import { Portal } from "@/components/ui/portal";
 import { getFormPublicUrl } from "@/lib/form-public-url";
+import { useWorkspaceSlug } from "@/hooks/use-workspace-slug";
 import { downloadFormQrPng, downloadFormQrSvg, generateFormQrDataUrl } from "@/lib/form-qr";
 
 interface FormQrModalProps {
@@ -14,16 +15,17 @@ interface FormQrModalProps {
 }
 
 export function FormQrModal({ open, onClose, formTitle, slug }: FormQrModalProps) {
+  const companySlug = useWorkspaceSlug();
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState<"png" | "svg" | null>(null);
 
-  const publicUrl = getFormPublicUrl(slug);
+  const publicUrl = companySlug ? getFormPublicUrl(companySlug, slug) : "";
   const safeFilename = slug.replace(/[^a-z0-9-]/gi, "-") || "form-qr";
 
   useEffect(() => {
-    if (!open) {
+    if (!open || !publicUrl) {
       setQrDataUrl(null);
       setCopied(false);
       return;

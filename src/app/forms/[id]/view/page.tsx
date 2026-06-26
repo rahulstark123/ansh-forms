@@ -3,28 +3,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
-  Type, Mail, Phone, Hash, AlignLeft, ChevronDown, CheckSquare, Radio, Calendar, Star,
-  Upload, PenTool, Clock, ArrowLeft, Layers, ListOrdered, BarChart2, Pencil
+  ArrowLeft, Layers, ListOrdered, BarChart2, Pencil, Type
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
+import { FormFieldPreview } from "@/components/forms/form-field-preview";
+import { FIELD_TYPES } from "@/config/form-fields";
 import ResponsesPage from "../responses/page";
-
-const FIELD_TYPES = [
-  { type: "text", label: "Short Text", icon: Type },
-  { type: "email", label: "Email Address", icon: Mail },
-  { type: "phone", label: "Phone Number", icon: Phone },
-  { type: "number", label: "Number Input", icon: Hash },
-  { type: "textarea", label: "Paragraph Text", icon: AlignLeft },
-  { type: "dropdown", label: "Select Dropdown", icon: ChevronDown, hasOptions: true },
-  { type: "radio", label: "Radio Buttons", icon: Radio, hasOptions: true },
-  { type: "checkbox", label: "Checkbox List", icon: CheckSquare, hasOptions: true },
-  { type: "date", label: "Date Picker", icon: Calendar },
-  { type: "time", label: "Time Picker", icon: Clock },
-  { type: "rating", label: "Star Rating", icon: Star },
-  { type: "file", label: "File Upload", icon: Upload },
-  { type: "signature", label: "E-Signature", icon: PenTool }
-];
 
 interface FormField {
   id: string;
@@ -297,34 +282,7 @@ export default function FormViewPage() {
 
                         {/* Input preview */}
                         <div className="mt-2.5">
-                          {field.type === "textarea" ? (
-                            <div className="builder-input-preview w-full h-12 rounded-lg border text-[11px] p-2 italic font-semibold border-border/50 text-slate-400 bg-slate-50/20 dark:bg-zinc-900/10">
-                              {field.placeholder}
-                            </div>
-                          ) : ["dropdown", "radio", "checkbox"].includes(field.type) ? (
-                            <div className="space-y-1.5">
-                              {field.options?.map((opt, oIdx) => (
-                                <div key={oIdx} className="builder-option-text flex items-center gap-2 text-[10px] text-slate-500 dark:text-zinc-350 font-bold">
-                                  {field.type === "dropdown" && <span className="text-slate-400 dark:text-zinc-400 font-mono">{oIdx + 1}.</span>}
-                                  {field.type === "radio" && <span className="h-3 w-3 rounded-full border border-slate-300 dark:border-zinc-700 bg-slate-50/30 dark:bg-zinc-900/10 block shrink-0" />}
-                                  {field.type === "checkbox" && <span className="h-3 w-3 rounded border border-slate-300 dark:border-zinc-700 bg-slate-50/30 dark:bg-zinc-900/10 block shrink-0" />}
-                                  <span>{opt}</span>
-                                </div>
-                              ))}
-                            </div>
-                          ) : field.type === "rating" ? (
-                            <div className="flex gap-1 text-amber-400 select-none">
-                              {[1, 2, 3, 4, 5].map((s) => <Star key={s} className="h-4.5 w-4.5 fill-current" />)}
-                            </div>
-                          ) : field.type === "signature" ? (
-                            <div className="builder-input-preview w-full h-16 rounded-xl border border-dashed border-border/60 flex items-center justify-center text-[10px] font-bold italic text-slate-400 bg-slate-50/20 dark:bg-zinc-900/10">
-                              E-Signature pad
-                            </div>
-                          ) : (
-                            <div className="builder-input-preview w-full py-2 px-3 rounded-lg border text-[11px] italic font-semibold border-border/50 text-slate-400 bg-slate-50/20 dark:bg-zinc-900/10">
-                              {field.placeholder}
-                            </div>
-                          )}
+                          <FormFieldPreview field={field} />
                         </div>
                       </div>
                     );

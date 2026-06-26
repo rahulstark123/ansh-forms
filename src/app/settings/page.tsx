@@ -4,36 +4,26 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useUIStore } from "@/stores/ui-store";
 import {
-  Key,
-  Upload,
-  Database,
-  RefreshCw,
   User,
   Building,
-  CreditCard,
-  Settings,
   Check,
   Edit2,
   Save,
   X,
-  Briefcase,
-  Calendar,
   Phone,
-  Mail,
-  Droplet,
   MapPin,
-  Globe,
-  Clock,
-  Award,
-  Sparkles,
-  TrendingUp,
   Loader2,
   ChevronDown,
+  FolderOpen,
+  Plus,
+  Trash2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Portal } from "@/components/ui/portal";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
+import { apiClient } from "@/lib/api-client";
+import { normalizeCategoryName } from "@/lib/form-categories";
+import { clearWorkspaceSlugCache } from "@/hooks/use-workspace-slug";
 
 /* ─── types ─────────────────────────────────────────────────── */
 interface ProfileFields {
@@ -104,21 +94,18 @@ export default function SettingsPage() {
 
   /* ── Company / Workspace states ── */
   const [companyName, setCompanyName] = useState("Ansh Apps Corp");
+  const [companySlug, setCompanySlug] = useState("");
+  const [savingCompany, setSavingCompany] = useState(false);
   const [taxId, setTaxId] = useState("TAX-89304-IN");
   const [corporateEmail, setCorporateEmail] = useState("admin@anshapps.com");
   const [address, setAddress] = useState("120 Venture Boulevard, Tech City, IN");
   const [timezone, setTimezone] = useState("UTC+05:30 (IST)");
   const [language, setLanguage] = useState("English (US)");
 
-  const [geminiKey, setGeminiKey] = useState("");
-  const [r2Endpoint, setR2Endpoint] = useState("");
-  const [r2Bucket, setR2Bucket] = useState("");
-  const [r2AccessKey, setR2AccessKey] = useState("");
-  const [r2SecretKey, setR2SecretKey] = useState("");
-
-  const [savingKey, setSavingKey] = useState(false);
-  const [savingR2, setSavingR2] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [savingCategories, setSavingCategories] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
 
   /* ── Fetch profile from DB on mount ── */
   useEffect(() => {
@@ -147,14 +134,21 @@ export default function SettingsPage() {
       .finally(() => setLoadingProfile(false));
   }, [user?.email]);
 
-  /* Load localStorage for workspace/company tabs */
+  /* Load workspace company name + slug */
+  useEffect(() => {
+    if (activeTab !== "company") return;
+    apiClient("/api/workspace")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.workspace?.name) setCompanyName(data.workspace.name);
+        if (data.workspace?.slug) setCompanySlug(data.workspace.slug);
+      })
+      .catch(console.error);
+  }, [activeTab]);
+
+  /* Load localStorage for company tab extras */
   useEffect(() => {
     if (typeof window === "undefined") return;
-    setGeminiKey(localStorage.getItem("GEMINI_API_KEY") || "");
-    setR2Endpoint(localStorage.getItem("R2_ENDPOINT") || "");
-    setR2Bucket(localStorage.getItem("R2_BUCKET_NAME") || "");
-    setR2AccessKey(localStorage.getItem("R2_ACCESS_KEY_ID") || "");
-    setR2SecretKey(localStorage.getItem("R2_SECRET_ACCESS_KEY") || "");
     setCompanyName(localStorage.getItem("company_name") || "Ansh Apps Corp");
     setTaxId(localStorage.getItem("company_tax_id") || "TAX-89304-IN");
     setCorporateEmail(localStorage.getItem("company_email") || "admin@anshapps.com");
@@ -162,6 +156,19 @@ export default function SettingsPage() {
     setTimezone(localStorage.getItem("company_timezone") || "UTC+05:30 (IST)");
     setLanguage(localStorage.getItem("company_language") || "English (US)");
   }, []);
+
+  /* Load workspace form categories */
+  useEffect(() => {
+    if (activeTab !== "workspace") return;
+    setLoadingCategories(true);
+    apiClient("/api/workspace/categories")
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data.categories)) setCategories(data.categories);
+      })
+      .catch(console.error)
+      .finally(() => setLoadingCategories(false));
+  }, [activeTab]);
 
   /* ── Open modal: seed draft from current profile ── */
   const openModal = () => {
@@ -225,68 +232,74 @@ export default function SettingsPage() {
   };
 
   /* ── Company save ── */
-  const handleSaveCompany = (e: React.FormEvent) => {
+  const handleSaveCompany = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (typeof window !== "undefined") {
-      localStorage.setItem("company_name", companyName);
-      localStorage.setItem("company_tax_id", taxId);
-      localStorage.setItem("company_email", corporateEmail);
-      localStorage.setItem("company_address", address);
-      localStorage.setItem("company_timezone", timezone);
-      localStorage.setItem("company_language", language);
-      toast("Company details updated successfully.");
-    }
-  };
-
-  /* ── Workspace saves ── */
-  const handleSaveGemini = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSavingKey(true);
-    if (typeof window !== "undefined") localStorage.setItem("GEMINI_API_KEY", geminiKey);
-    toast("Gemini AI API credentials saved.");
-    setSavingKey(false);
-  };
-
-  const handleSaveR2 = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSavingR2(true);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("R2_ENDPOINT", r2Endpoint);
-      localStorage.setItem("R2_BUCKET_NAME", r2Bucket);
-      localStorage.setItem("R2_ACCESS_KEY_ID", r2AccessKey);
-      localStorage.setItem("R2_SECRET_ACCESS_KEY", r2SecretKey);
-    }
-    toast("Cloudflare R2 storage settings saved.");
-    setSavingR2(false);
-  };
-
-  /* ── Postgres sync ── */
-  const handleSyncProfile = async () => {
-    if (!user) return;
-    setRefreshing(true);
+    setSavingCompany(true);
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: user.email }),
+      const res = await apiClient("/api/workspace", {
+        method: "PUT",
+        body: JSON.stringify({ name: companyName }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data.user);
-        toast("Profile synced with PostgreSQL successfully.");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to save company details.");
+
+      if (data.workspace?.slug) {
+        setCompanySlug(data.workspace.slug);
+        clearWorkspaceSlugCache();
       }
-    } catch (err) {
-      console.error("Sync error:", err);
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem("company_name", companyName);
+        localStorage.setItem("company_tax_id", taxId);
+        localStorage.setItem("company_email", corporateEmail);
+        localStorage.setItem("company_address", address);
+        localStorage.setItem("company_timezone", timezone);
+        localStorage.setItem("company_language", language);
+      }
+      toast("Company details updated successfully.");
+    } catch (err: unknown) {
+      toast(`Error: ${err instanceof Error ? err.message : "Save failed"}`);
     } finally {
-      setRefreshing(false);
+      setSavingCompany(false);
     }
   };
 
-  const handlePlanToggle = (plan: "Free" | "Pro") => {
-    if (user) {
-      setUser({ ...user, pricingPlan: plan });
-      toast(`Pricing plan updated to ${plan} subscription successfully!`);
+  /* ── Workspace categories ── */
+  const saveCategories = async (next: string[]) => {
+    setSavingCategories(true);
+    try {
+      const res = await apiClient("/api/workspace/categories", {
+        method: "PUT",
+        body: JSON.stringify({ categories: next }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to save categories.");
+      setCategories(data.categories);
+      toast("Form categories updated.");
+    } catch (err: unknown) {
+      toast(`Error: ${err instanceof Error ? err.message : "Save failed"}`);
+    } finally {
+      setSavingCategories(false);
     }
+  };
+
+  const handleAddCategory = async () => {
+    const name = normalizeCategoryName(newCategory);
+    if (!name) return;
+    if (categories.some((c) => c.toLowerCase() === name.toLowerCase())) {
+      toast("Category already exists.");
+      return;
+    }
+    setNewCategory("");
+    await saveCategories([...categories, name]);
+  };
+
+  const handleRemoveCategory = async (name: string) => {
+    if (categories.length <= 1) {
+      toast("At least one category is required.");
+      return;
+    }
+    await saveCategories(categories.filter((c) => c !== name));
   };
 
   /* ── Input helper ── */
@@ -519,7 +532,7 @@ export default function SettingsPage() {
           <p className="text-xs text-slate-400 dark:text-slate-500 font-bold mt-2">
             {activeTab === "profile" && "Manage your account profile details, contact info, emergency contacts, and office location parameters."}
             {activeTab === "company" && "Configure organization structures, default localization models, and billing credentials."}
-            {activeTab === "workspace" && "Integrate database states, Gemini AI models, and Cloudflare storage keys."}
+            {activeTab === "workspace" && "Create and manage form categories used across your workspace."}
           </p>
         </div>
       </div>
@@ -650,6 +663,11 @@ export default function SettingsPage() {
               <div>
                 <label className="text-[9px] font-black uppercase text-slate-400 block mb-1">Company Name</label>
                 <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="premium-input text-xs font-bold" required />
+                {companySlug && (
+                  <p className="text-[10px] text-slate-400 font-mono mt-1.5">
+                    Public form URLs: <span className="text-slate-600 dark:text-zinc-300">/{companySlug}/your-form-slug</span>
+                  </p>
+                )}
               </div>
               <div>
                 <label className="text-[9px] font-black uppercase text-slate-400 block mb-1">Corporate Tax ID</label>
@@ -698,78 +716,78 @@ export default function SettingsPage() {
 
       {/* ═══════════ WORKSPACE TAB ═══════════ */}
       {activeTab === "workspace" && (
-        <div className="space-y-6 max-w-4xl">
-          {/* Profile sync */}
-          <div className="crm-card bg-card border-border p-6 space-y-4">
-            <div className="flex justify-between items-center">
-              <div className="flex gap-3 items-center">
-                <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary font-black border border-primary/20 shrink-0">
-                  <Database className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-black text-slate-800 dark:text-zinc-200 uppercase tracking-wider">User Profile sync</h3>
-                  <p className="text-[10px] text-slate-400 font-semibold mt-0.5">Check active workspace connection states in the Postgres cluster.</p>
-                </div>
+        <div className="space-y-6 max-w-3xl">
+          <div className="crm-card bg-card border-border p-6 space-y-5">
+            <div className="flex gap-3 items-center pb-3 border-b border-border/50">
+              <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary border border-primary/20 shrink-0">
+                <FolderOpen className="h-5 w-5" />
               </div>
-              <button
-                onClick={handleSyncProfile}
-                disabled={refreshing}
-                className="flex items-center gap-1.5 px-4.5 py-2.5 rounded-xl border border-border/80 text-xs font-bold uppercase tracking-wider hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 cursor-pointer"
-              >
-                <RefreshCw className={cn("h-4 w-4 text-slate-400", refreshing && "animate-spin")} />
-                <span>Sync profile</span>
-              </button>
+              <div>
+                <h3 className="text-xs font-black text-slate-800 dark:text-zinc-200 uppercase tracking-wider">
+                  Form Categories
+                </h3>
+                <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
+                  Categories appear when creating or editing forms. Infrastructure keys are configured via environment variables.
+                </p>
+              </div>
             </div>
-            {user && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-semibold pt-4 border-t border-border/40">
-                <div><span className="text-[9px] font-black uppercase text-slate-400 tracking-wider block">Full Name</span><span className="text-slate-800 dark:text-zinc-200 mt-1 block">{user.name}</span></div>
-                <div><span className="text-[9px] font-black uppercase text-slate-400 tracking-wider block">Email Address</span><span className="text-slate-800 dark:text-zinc-200 mt-1 block">{user.email}</span></div>
-                <div><span className="text-[9px] font-black uppercase text-slate-400 tracking-wider block">Workspace ID</span><span className="text-slate-800 dark:text-zinc-200 font-mono mt-1 block">WID-{user.wid}</span></div>
-                <div><span className="text-[9px] font-black uppercase text-slate-400 tracking-wider block">Pricing Plan</span><span className="text-primary font-black uppercase mt-1 block tracking-wider">{user.pricingPlan} Plan</span></div>
+
+            {loadingCategories ? (
+              <div className="flex items-center justify-center py-10 gap-2 text-slate-400">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span className="text-xs font-bold">Loading categories…</span>
               </div>
+            ) : (
+              <>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCategory())}
+                    placeholder="New category name…"
+                    className="premium-input text-xs flex-1"
+                    maxLength={48}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddCategory}
+                    disabled={savingCategories || !normalizeCategoryName(newCategory)}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-wider hover:opacity-90 disabled:opacity-40 cursor-pointer shrink-0"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>Add</span>
+                  </button>
+                </div>
+
+                <ul className="space-y-2">
+                  {categories.map((cat) => (
+                    <li
+                      key={cat}
+                      className="flex items-center justify-between gap-3 p-3 rounded-xl border border-border/60 bg-slate-50/50 dark:bg-zinc-900/20"
+                    >
+                      <span className="text-xs font-bold text-slate-700 dark:text-zinc-200">{cat}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveCategory(cat)}
+                        disabled={savingCategories || categories.length <= 1}
+                        className="h-8 w-8 rounded-lg border border-border/80 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 disabled:opacity-30 cursor-pointer"
+                        title="Remove category"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+
+                {savingCategories && (
+                  <p className="text-[10px] text-slate-400 font-semibold flex items-center gap-1.5">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Saving…
+                  </p>
+                )}
+              </>
             )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Gemini */}
-            <div className="crm-card bg-card border-border p-6">
-              <div className="flex gap-3 items-center mb-4">
-                <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary border border-primary/20 shrink-0"><Key className="h-5 w-5" /></div>
-                <div><h3 className="text-xs font-black text-slate-800 dark:text-zinc-200 uppercase tracking-wider">Gemini API settings</h3><p className="text-[10px] text-slate-400 font-semibold mt-0.5">Toggle prompt-based AI builders.</p></div>
-              </div>
-              <form onSubmit={handleSaveGemini} className="space-y-3">
-                <div>
-                  <label className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Gemini API Key</label>
-                  <input type="password" value={geminiKey} onChange={(e) => setGeminiKey(e.target.value)} placeholder="AI prompt generator key..." className="premium-input text-xs mt-1" />
-                  <span className="text-[8px] text-slate-400 font-bold block pt-1">If empty, AI generation falls back to template parsing logic.</span>
-                </div>
-                <button type="submit" disabled={savingKey} className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-black text-xs uppercase tracking-wider hover:opacity-90 cursor-pointer">
-                  {savingKey ? "Saving..." : "Save Gemini Key"}
-                </button>
-              </form>
-            </div>
-
-            {/* R2 */}
-            <div className="crm-card bg-card border-border p-6">
-              <div className="flex gap-3 items-center mb-4">
-                <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary border border-primary/20 shrink-0"><Upload className="h-5 w-5" /></div>
-                <div><h3 className="text-xs font-black text-slate-800 dark:text-zinc-200 uppercase tracking-wider">Cloudflare R2 Storage</h3><p className="text-[10px] text-slate-400 font-semibold mt-0.5">Setup S3-compatible attachment stores.</p></div>
-              </div>
-              <form onSubmit={handleSaveR2} className="space-y-3">
-                <div className="grid grid-cols-2 gap-2">
-                  <div><label className="text-[8px] font-black uppercase text-slate-400">R2 Endpoint</label><input type="text" value={r2Endpoint} onChange={(e) => setR2Endpoint(e.target.value)} placeholder="https://bucket..." className="premium-input text-[11px] py-1.5 mt-0.5" /></div>
-                  <div><label className="text-[8px] font-black uppercase text-slate-400">Bucket Name</label><input type="text" value={r2Bucket} onChange={(e) => setR2Bucket(e.target.value)} placeholder="ansh-forms" className="premium-input text-[11px] py-1.5 mt-0.5" /></div>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div><label className="text-[8px] font-black uppercase text-slate-400">Access Key ID</label><input type="password" value={r2AccessKey} onChange={(e) => setR2AccessKey(e.target.value)} placeholder="Key ID..." className="premium-input text-[11px] py-1.5 mt-0.5" /></div>
-                  <div><label className="text-[8px] font-black uppercase text-slate-400">Secret Access Key</label><input type="password" value={r2SecretKey} onChange={(e) => setR2SecretKey(e.target.value)} placeholder="Secret Key..." className="premium-input text-[11px] py-1.5 mt-0.5" /></div>
-                </div>
-                <span className="text-[8px] text-slate-400 font-bold block">If empty, file uploads fall back to local public uploads.</span>
-                <button type="submit" disabled={savingR2} className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-black text-xs uppercase tracking-wider hover:opacity-90 cursor-pointer">
-                  {savingR2 ? "Saving..." : "Save R2 Keys"}
-                </button>
-              </form>
-            </div>
           </div>
         </div>
       )}

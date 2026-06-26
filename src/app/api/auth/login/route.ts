@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { resolveUniqueWorkspaceSlug } from "@/lib/workspace-slug";
 
 export async function POST(request: Request) {
   try {
@@ -22,13 +23,17 @@ export async function POST(request: Request) {
       });
       const nextWid = latestWorkspace ? latestWorkspace.wid + 1 : 1;
 
+      const workspaceName = `Workspace #${nextWid}`;
+      const workspaceSlug = await resolveUniqueWorkspaceSlug(workspaceName);
+
       // Ensure Workspace exists
       await db.workspace.upsert({
         where: { wid: nextWid },
         update: {},
         create: {
           wid: nextWid,
-          name: `Workspace #${nextWid}`,
+          name: workspaceName,
+          slug: workspaceSlug,
         },
       });
 

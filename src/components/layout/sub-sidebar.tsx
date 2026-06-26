@@ -5,11 +5,14 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Hammer, BarChart3, QrCode, ArrowLeft, Globe, Sparkles, Layers, Check, FileText, User, Building, Settings, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
+import { useWorkspaceSlug } from "@/hooks/use-workspace-slug";
+import { getFormPublicPath } from "@/lib/form-public-url";
 
 export function SubSidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const activeForm = useUIStore((state) => state.activeForm);
+  const companySlug = useWorkspaceSlug();
   const activeFilter = searchParams.get("filter") || "all";
   const activeTab = searchParams.get("tab") || "profile";
 
@@ -235,9 +238,9 @@ export function SubSidebar() {
         })}
 
         {/* Quick link to public page */}
-        {activeForm?.slug && (
+        {activeForm?.slug && companySlug && (
           <a
-            href={`/f/${activeForm.slug}`}
+            href={getFormPublicPath(companySlug, activeForm.slug)}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 transition-all"

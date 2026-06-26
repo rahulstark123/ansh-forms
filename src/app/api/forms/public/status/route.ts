@@ -20,6 +20,14 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Associated form not found in workspace." }, { status: 404 });
     }
 
+    const settingsObj = typeof form.settings === "string" ? JSON.parse(form.settings) : form.settings || {};
+    if (settingsObj.requiresApproval !== true) {
+      return NextResponse.json(
+        { error: "This form does not use approval tracking." },
+        { status: 403 }
+      );
+    }
+
     // Retrieve submission by custom ID
     const submission = await db.submission.findFirst({
       where: {
@@ -32,7 +40,6 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Submission reference ID not found in form records." }, { status: 404 });
     }
 
-    const settingsObj = typeof form.settings === "string" ? JSON.parse(form.settings) : form.settings || {};
     const brandColor = settingsObj.brandColor || "emerald";
 
     return NextResponse.json({

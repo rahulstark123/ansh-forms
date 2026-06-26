@@ -28,6 +28,7 @@ import { FORM_TEMPLATES } from "@/config/templates";
 import { FEATURES } from "@/config/features";
 import { cn } from "@/lib/utils";
 import { StatCardSkeleton, ResponseTableSkeleton, TopFormsSkeleton } from "@/components/ui/skeleton";
+import { useWorkspaceSlug } from "@/hooks/use-workspace-slug";
 import { isUiOnlyMode, openDraftPlayground, mockAiDraftFromPrompt } from "@/lib/draft-form";
 import { apiClient } from "@/lib/api-client";
 
@@ -62,6 +63,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const user = useUIStore((state) => state.user);
   const setActiveForm = useUIStore((state) => state.setActiveForm);
+  const companySlug = useWorkspaceSlug();
   
   // State
   const [forms, setForms] = useState<FormItem[]>([]);
@@ -558,7 +560,7 @@ export default function DashboardPage() {
                         {item.title}
                       </div>
                       <div className="text-[9px] text-slate-400 font-mono truncate">
-                        /f/{item.slug}
+                        /{companySlug || "…"}/{item.slug}
                       </div>
                     </div>
 

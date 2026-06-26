@@ -22,11 +22,17 @@ export interface GlobalAlert {
 
 interface FormField {
   id: string;
-  type: string; // text, email, phone, number, textarea, dropdown, radio, checkbox, date, rating, file, signature
+  type: string; // text, email, phone, number, textarea, dropdown, radio, checkbox, date, rating, file, signature, url, datetime, toggle, scale, consent, currency, section
   label: string;
   placeholder: string;
   required: boolean;
   options?: string[]; // For choices like dropdown, radio, checkbox
+  scaleMin?: number;
+  scaleMax?: number;
+  scaleMinLabel?: string;
+  scaleMaxLabel?: string;
+  currencyCode?: string;
+  currencySymbol?: string;
 }
 
 interface FormLandingPage {
@@ -44,6 +50,7 @@ interface FormSettings {
   coverUrl?: string;
   thankYouTitle?: string;
   thankYouMessage?: string;
+  requiresApproval?: boolean;
   headerEnabled?: boolean;
   headerTitle?: string;
   headerSubtitle?: string;

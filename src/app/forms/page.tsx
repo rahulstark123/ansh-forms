@@ -13,7 +13,9 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { Portal } from "@/components/ui/portal";
 import { FormCardSkeleton, FormTableSkeleton } from "@/components/ui/skeleton";
 import { FormQrModal } from "@/components/forms/form-qr-modal";
-import { getFormPublicUrl } from "@/lib/form-public-url";
+import { getFormPublicUrl, getFormPublicPath } from "@/lib/form-public-url";
+import { useFormCategories } from "@/hooks/use-form-categories";
+import { useWorkspaceSlug } from "@/hooks/use-workspace-slug";
 
 interface FormItem {
   id: string;
@@ -37,6 +39,8 @@ export default function FormsPage() {
   const searchParams = useSearchParams();
   const user = useUIStore((state) => state.user);
   const setActiveForm = useUIStore((state) => state.setActiveForm);
+  const { categories: formCategories } = useFormCategories();
+  const companySlug = useWorkspaceSlug();
 
   // States
   const [forms, setForms] = useState<FormItem[]>([]);
@@ -366,7 +370,8 @@ export default function FormsPage() {
   };
 
   const handleCopyLink = (slug: string) => {
-    navigator.clipboard.writeText(getFormPublicUrl(slug));
+    if (!companySlug) return;
+    navigator.clipboard.writeText(getFormPublicUrl(companySlug, slug));
     setCopiedId(slug);
     useUIStore.getState().addGlobalAlert("success", "Public link copied to clipboard!");
     setTimeout(() => setCopiedId(null), 2000);
@@ -651,11 +656,9 @@ export default function FormsPage() {
                 className="w-full appearance-none px-3.5 pr-9 py-2.5 text-xs font-bold rounded-xl border border-border bg-card text-slate-700 dark:text-zinc-300 outline-none focus:border-primary/50 cursor-pointer shadow-sm"
               >
                 <option value="All">All Categories</option>
-                <option value="General">General</option>
-                <option value="Registration">Registration</option>
-                <option value="Feedback">Feedback</option>
-                <option value="Lead Gen">Lead Gen</option>
-                <option value="Operations">Operations</option>
+                {formCategories.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
               </select>
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-450 dark:text-slate-500 pointer-events-none" />
             </div>
@@ -712,7 +715,7 @@ export default function FormsPage() {
                         {form.category || "General"}
                       </span>
                     </div>
-                    <span className="text-xs text-slate-400 dark:text-slate-500 font-mono">/f/{form.slug}</span>
+                    <span className="text-xs text-slate-400 dark:text-slate-500 font-mono">/{companySlug || "…"}/{form.slug}</span>
                   </div>
 
                   {/* Title & Desc */}
@@ -787,7 +790,7 @@ export default function FormsPage() {
                       >
                         {form.title}
                       </div>
-                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">/f/{form.slug}</div>
+                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">/{companySlug || "…"}/{form.slug}</div>
                     </td>
 
                     {/* Category */}
@@ -914,11 +917,9 @@ export default function FormsPage() {
                           onChange={(e) => setFormCategory(e.target.value)}
                           className="w-full appearance-none premium-input text-sm font-bold bg-card pr-10"
                         >
-                          <option value="General">General</option>
-                          <option value="Registration">Registration</option>
-                          <option value="Feedback">Feedback</option>
-                          <option value="Lead Gen">Lead Gen</option>
-                          <option value="Operations">Operations</option>
+                          {formCategories.map((cat) => (
+                            <option key={cat} value={cat}>{cat}</option>
+                          ))}
                         </select>
                         <ChevronDown className="absolute right-4.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-455 dark:text-slate-500 pointer-events-none" />
                       </div>

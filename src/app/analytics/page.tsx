@@ -27,6 +27,7 @@ import { useUIStore } from "@/stores/ui-store";
 import { cn } from "@/lib/utils";
 import { AnalyticsPageSkeleton } from "@/components/ui/skeleton";
 import { apiClient } from "@/lib/api-client";
+import { useWorkspaceSlug } from "@/hooks/use-workspace-slug";
 import { isUiOnlyMode } from "@/lib/draft-form";
 import { MOCK_ANALYTICS, MOCK_TREND_DATA } from "@/lib/analytics-mock";
 import {
@@ -56,6 +57,7 @@ function shortLabel(title: string, max = 14) {
 export default function AnalyticsPage() {
   const router = useRouter();
   useUIStore((state) => state.user);
+  const companySlug = useWorkspaceSlug();
 
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -365,7 +367,7 @@ export default function AnalyticsPage() {
                       <td className="px-6 py-4">
                         <div className="font-bold text-slate-800 dark:text-zinc-100 max-w-[240px] truncate">{item.title}</div>
                         <div className="text-[10px] text-slate-400 font-mono mt-0.5">
-                          {`/f/${item.slug}`}
+                          {`/${companySlug || "…"}/${item.slug}`}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-center font-mono font-bold">{item.views}</td>

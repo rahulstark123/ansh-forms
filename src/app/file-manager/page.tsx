@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { HardDrive, Upload, Search, Trash2, Download, Eye, FileText, Check, AlertCircle } from "lucide-react";
 import { useUIStore } from "@/stores/ui-store";
 import { cn } from "@/lib/utils";
+import { uploadFileWithCompression } from "@/lib/upload-file";
+import { compressionSummary } from "@/lib/compress-file";
 
 interface UploadedFile {
   name: string;
@@ -50,27 +52,20 @@ export default function FileManagerPage() {
     setErrorMsg("");
     setSuccessMsg("");
 
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData
-      });
-
-      if (res.ok) {
-        setSuccessMsg("File uploaded successfully.");
-        fetchFiles();
-        setTimeout(() => setSuccessMsg(""), 3000);
-      } else {
-        setErrorMsg("Failed to upload file to storage.");
-      }
+      const result = await uploadFileWithCompression(file);
+      const note = compressionSummary(result);
+      setSuccessMsg(
+        note ? `File uploaded. ${note}` : "File uploaded successfully."
+      );
+      fetchFiles();
+      setTimeout(() => setSuccessMsg(""), 4000);
     } catch (err) {
       console.error("Upload error:", err);
       setErrorMsg("Error uploading file.");
     } finally {
       setUploading(false);
+      e.target.value = "";
     }
   };
 

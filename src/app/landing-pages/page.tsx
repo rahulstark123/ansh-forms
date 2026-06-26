@@ -6,6 +6,7 @@ import { Plus, Eye, BarChart3, Trash2, Copy, Globe, Sparkles, Search, SlidersHor
 import { useUIStore } from "@/stores/ui-store";
 import { cn } from "@/lib/utils";
 import { Portal } from "@/components/ui/portal";
+import { useWorkspaceSlug } from "@/hooks/use-workspace-slug";
 
 interface LandingPageItem {
   id: string;
@@ -33,6 +34,7 @@ export default function LandingPagesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const user = useUIStore((state) => state.user);
+  const companySlug = useWorkspaceSlug();
 
   // States
   const [pages, setPages] = useState<LandingPageItem[]>([]);
@@ -107,7 +109,7 @@ export default function LandingPagesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: pageTitle,
-          description: `Landing page for connected form /f/${connectedFormSlug}`,
+          description: `Landing page for connected form /${companySlug || "…"}/${connectedFormSlug}`,
           fields: [], // Landing pages don't hold fields directly
           landingPage: {
             enabled: true,
@@ -176,7 +178,7 @@ export default function LandingPagesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: templateTitle,
-          description: `Landing Page template connected to /f/${defaultFormSlug}`,
+          description: `Landing Page template connected to /${companySlug || "…"}/${defaultFormSlug}`,
           fields: [],
           landingPage: {
             enabled: true,
@@ -470,7 +472,7 @@ export default function LandingPagesPage() {
                     </h3>
                     <div className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
                       <span>Connected Form:</span>
-                      <span className="font-mono font-bold text-slate-600 dark:text-zinc-350">/f/{connSlug}</span>
+                      <span className="font-mono font-bold text-slate-600 dark:text-zinc-350">/{companySlug || "…"}/{connSlug}</span>
                     </div>
                   </div>
 
@@ -617,7 +619,7 @@ export default function LandingPagesPage() {
                         >
                           <option value="">Select a form database...</option>
                           {forms.map((f) => (
-                            <option key={f.id} value={f.slug}>{f.title} (/f/{f.slug})</option>
+                            <option key={f.id} value={f.slug}>{f.title} (/{companySlug || "…"}/{f.slug})</option>
                           ))}
                         </select>
                       </div>

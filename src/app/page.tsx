@@ -368,7 +368,7 @@ export default async function RootPage() {
                         <div className="flex items-start justify-between gap-1">
                           <div className="min-w-0">
                             <div className="text-[10px] font-bold text-zinc-100 truncate">{form.title}</div>
-                            <div className="text-[8px] text-zinc-500 font-mono truncate">/f/{form.slug}</div>
+                            <div className="text-[8px] text-zinc-500 font-mono truncate">/ansh-apps/{form.slug}</div>
                           </div>
                           <span className={`text-[6px] font-black uppercase px-1.5 py-0.5 rounded border shrink-0 ${form.statusClass}`}>
                             {form.status}
@@ -525,7 +525,7 @@ export default async function RootPage() {
               Affordable plans tailored for every scale
             </h2>
             <p className="text-sm font-semibold text-zinc-400 leading-relaxed max-w-2xl mx-auto">
-              Start free with basic forms, standard templates, and QR codes — upgrade to Pro for AI drafting, advanced analytics, and custom brand assets.
+              Start free with basic forms, standard templates, and QR codes — upgrade to Pro for advanced analytics, custom branding, and file uploads.
             </p>
           </div>
 
@@ -572,10 +572,6 @@ export default async function RootPage() {
                   </li>
                   <li className="flex gap-2.5 items-center text-zinc-500">
                     <X className="h-4 w-4 text-zinc-600 shrink-0" />
-                    <span className="line-through decoration-zinc-850">AI Form Generator prompts</span>
-                  </li>
-                  <li className="flex gap-2.5 items-center text-zinc-500">
-                    <X className="h-4 w-4 text-zinc-600 shrink-0" />
                     <span className="line-through decoration-zinc-855">Custom logo &amp; brand accents</span>
                   </li>
                   <li className="flex gap-2.5 items-center text-zinc-500">
@@ -613,7 +609,7 @@ export default async function RootPage() {
                 <div>
                   <h3 className="text-xl font-black text-white">Pro Plan</h3>
                   <p className="text-xs text-zinc-300 leading-relaxed font-semibold mt-1">
-                    Perfect for high-growth teams and enterprises needing custom brands, AI drafting, and analytics.
+                    Perfect for high-growth teams and enterprises needing custom branding, analytics, and file uploads.
                   </p>
                 </div>
 
@@ -623,10 +619,6 @@ export default async function RootPage() {
                   <li className="flex gap-2.5 items-center">
                     <Check className="h-4 w-4 text-emerald-400 shrink-0" />
                     <span>Unlimited forms building</span>
-                  </li>
-                  <li className="flex gap-2.5 items-center">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <span>AI Form Generator prompts</span>
                   </li>
                   <li className="flex gap-2.5 items-center">
                     <Check className="h-4 w-4 text-emerald-400 shrink-0" />
@@ -697,7 +689,7 @@ export default async function RootPage() {
                   </li>
                   <li className="flex gap-2 items-start text-[11px] font-semibold text-zinc-400">
                     <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                    <span>ANSH Forms combines a visual builder, AI drafting, and premium brand themes under one simple pricing structure.</span>
+                    <span>ANSH Forms combines a visual builder, premium brand themes, and analytics under one simple pricing structure.</span>
                   </li>
                 </ul>
               </div>
@@ -782,15 +774,11 @@ export default async function RootPage() {
             {[
               [
                 "How does ANSH Forms benefit teams compared to other form builder apps?",
-                "ANSH Forms consolidates visual form building, brand styling customization, AI form drafting, and real-time response analytics under one unified workspace. This eliminates the need to pay for multiple separate tool subscriptions."
+                "ANSH Forms consolidates visual form building, brand styling customization, and real-time response analytics under one unified workspace. This eliminates the need to pay for multiple separate tool subscriptions."
               ],
               [
                 "Can I customize the branding and theme background styles?",
                 "Yes. You can take complete control of logos, header colors, footer text, typography tone, and choose from a library of premium background designs (such as Aurora Glow, Dot Grid, and Silk Gradients) to match your corporate identity."
-              ],
-              [
-                "How does the AI form builder draft forms in seconds?",
-                "Simply enter a description of what you need (e.g., 'Customer satisfaction survey for retail store') and our built-in AI will draft a complete schema with appropriate field types, titles, options, and validations which you can then customize further."
               ],
               [
                 "How do file uploads work for form respondents?",
@@ -830,7 +818,7 @@ export default async function RootPage() {
             </h2>
 
             <p className="text-sm font-semibold text-zinc-400 leading-relaxed max-w-md">
-              Create your free workspace in under two minutes. No credit card required. Enjoy complete access to forms, AI drafting, and brand customizer.
+              Create your free workspace in under two minutes. No credit card required. Enjoy complete access to forms, templates, and brand customizer.
             </p>
 
             <Link

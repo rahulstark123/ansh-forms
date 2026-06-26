@@ -7,29 +7,18 @@ import {
   Type, Mail, Phone, Hash, AlignLeft, ChevronDown, CheckSquare, Radio, Calendar, Star,
   Upload, PenTool, Plus, Trash2, ArrowUp, ArrowDown, Settings, Palette, Layers,
   Check, Copy, Eye, Save, Sparkles, FileText, Clock, ArrowLeft, X, AlertTriangle,
-  BarChart2, ListOrdered, QrCode
+  BarChart2, ListOrdered, QrCode, ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buildDraftForm, isDraftFormId, isUiOnlyMode } from "@/lib/draft-form";
-import { getFormPublicUrl } from "@/lib/form-public-url";
+import { getFormPublicUrl, getFormPublicPath } from "@/lib/form-public-url";
 import { FormQrModal } from "@/components/forms/form-qr-modal";
+import { useWorkspaceSlug } from "@/hooks/use-workspace-slug";
+import { FormFieldPreview } from "@/components/forms/form-field-preview";
+import { CurrencySelect } from "@/components/forms/currency-select";
+import { FIELD_TYPES, createDefaultField, getFieldTypeConfig } from "@/config/form-fields";
+import { useFormCategories } from "@/hooks/use-form-categories";
 import ResponsesPage from "../responses/page";
-
-const FIELD_TYPES = [
-  { type: "text", label: "Short Text", icon: Type },
-  { type: "email", label: "Email Address", icon: Mail },
-  { type: "phone", label: "Phone Number", icon: Phone },
-  { type: "number", label: "Number Input", icon: Hash },
-  { type: "textarea", label: "Paragraph Text", icon: AlignLeft },
-  { type: "dropdown", label: "Select Dropdown", icon: ChevronDown, hasOptions: true },
-  { type: "radio", label: "Radio Buttons", icon: Radio, hasOptions: true },
-  { type: "checkbox", label: "Checkbox List", icon: CheckSquare, hasOptions: true },
-  { type: "date", label: "Date Picker", icon: Calendar },
-  { type: "time", label: "Time Picker", icon: Clock },
-  { type: "rating", label: "Star Rating", icon: Star },
-  { type: "file", label: "File Upload", icon: Upload },
-  { type: "signature", label: "E-Signature", icon: PenTool }
-];
 
 const DESIGN_BACKGROUNDS = [
   { id: "gradient", label: "Soft Gradient" },
@@ -51,6 +40,8 @@ export default function FormBuilderPage() {
   const updateFields = useUIStore((state) => state.updateActiveFormFields);
   const updateLandingPage = useUIStore((state) => state.updateActiveFormLandingPage);
   const updateSettings = useUIStore((state) => state.updateActiveFormSettings);
+  const { categories: formCategories } = useFormCategories();
+  const companySlug = useWorkspaceSlug();
 
   // States
   const [loading, setLoading] = useState(true);
@@ -129,6 +120,7 @@ export default function FormBuilderPage() {
             brandColor: "emerald",
             thankYouTitle: "Thank You!",
             thankYouMessage: "Your submission has been recorded.",
+            requiresApproval: false,
             headerEnabled: true,
             headerTitle: data.form.title,
             headerSubtitle: data.form.description || "Complete the form below.",
@@ -265,17 +257,7 @@ export default function FormBuilderPage() {
   // Add field to list
   const addField = (fieldType: string) => {
     if (!activeForm) return;
-    const defaultOptions = ["Option 1", "Option 2", "Option 3"];
-    const needsOptions = ["dropdown", "radio", "checkbox"].includes(fieldType);
-    
-    const newField = {
-      id: `${fieldType}_${Date.now()}`,
-      type: fieldType,
-      label: `New ${fieldType.charAt(0).toUpperCase() + fieldType.slice(1)} Field`,
-      placeholder: `Enter your answer here`,
-      required: false,
-      options: needsOptions ? defaultOptions : undefined
-    };
+    const newField = createDefaultField(fieldType);
 
     updateFields([...activeForm.fields, newField]);
     setSelectedCanvasSection(null);
@@ -291,6 +273,12 @@ export default function FormBuilderPage() {
     placeholder: string;
     required: boolean;
     options?: string[];
+    scaleMin?: number;
+    scaleMax?: number;
+    scaleMinLabel?: string;
+    scaleMaxLabel?: string;
+    currencyCode?: string;
+    currencySymbol?: string;
   }>) => {
     if (!activeForm) return;
     const updated = activeForm.fields.map((f) => {
@@ -366,8 +354,8 @@ export default function FormBuilderPage() {
   };
 
   const copyPublicLink = () => {
-    if (!activeForm) return;
-    navigator.clipboard.writeText(getFormPublicUrl(activeForm.slug));
+    if (!activeForm || !companySlug) return;
+    navigator.clipboard.writeText(getFormPublicUrl(companySlug, activeForm.slug));
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
@@ -537,7 +525,7 @@ export default function FormBuilderPage() {
           )}
 
           <a
-            href={`/f/${activeForm.slug}?preview=true`}
+            href={companySlug ? `${getFormPublicPath(companySlug, activeForm.slug)}?preview=true` : "#"}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 rounded-xl border border-border/80 px-3 py-2 text-[10px] font-bold uppercase tracking-wider hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -632,11 +620,9 @@ export default function FormBuilderPage() {
                   }}
                   className="premium-input text-xs font-semibold bg-card"
                 >
-                  <option value="General">General</option>
-                  <option value="Registration">Registration</option>
-                  <option value="Feedback">Feedback</option>
-                  <option value="Lead Gen">Lead Gen</option>
-                  <option value="Operations">Operations</option>
+                  {formCategories.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
                 </select>
               </div>
 
@@ -666,12 +652,46 @@ export default function FormBuilderPage() {
                 </div>
               </div>
 
+              {/* Approval workflow */}
+              <div className="space-y-1.5 pt-2">
+                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1.5">
+                  <ShieldCheck className="h-3 w-3" />
+                  Requires Approval
+                </label>
+                <div className="flex items-center gap-3 mt-1 select-none">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateSettings({ requiresApproval: !(activeForm.settings?.requiresApproval === true) });
+                      setDirty(true);
+                    }}
+                    className={cn(
+                      "w-12 h-6.5 rounded-full p-1 transition-colors duration-200 focus:outline-none cursor-pointer",
+                      activeForm.settings?.requiresApproval === true ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-800"
+                    )}
+                  >
+                    <div className={cn(
+                      "bg-white w-4.5 h-4.5 rounded-full shadow-md transform transition-transform duration-200",
+                      activeForm.settings?.requiresApproval === true ? "translate-x-5.5" : "translate-x-0"
+                    )} />
+                  </button>
+                  <span className="text-xs font-bold text-slate-700 dark:text-zinc-350 select-none leading-snug">
+                    {activeForm.settings?.requiresApproval === true
+                      ? "On — responses need review & tracking ID"
+                      : "Off — responses saved directly"}
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-400 font-medium leading-relaxed pt-0.5">
+                  When off, submissions are recorded immediately with no approval workflow or status tracking for respondents.
+                </p>
+              </div>
+
               {/* Form Link Slug Customization */}
               <div className="space-y-1 pt-2">
                 <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Public Link URL Slug</label>
                 <div className="flex gap-2">
-                  <span className="inline-flex items-center px-3 rounded-xl border border-r-0 border-border/80 bg-slate-100 dark:bg-[#121625]/60 text-[10px] font-mono text-slate-400">
-                    /f/
+                  <span className="inline-flex items-center px-3 rounded-xl border border-r-0 border-border/80 bg-slate-100 dark:bg-[#121625]/60 text-[10px] font-mono text-slate-400 max-w-[120px] truncate">
+                    /{companySlug || "…"}/
                   </span>
                   <input
                     type="text"
@@ -1073,7 +1093,7 @@ export default function FormBuilderPage() {
                   key={field.type}
                   type="button"
                   onClick={() => addField(field.type)}
-                  className="builder-palette-btn flex w-full items-center gap-2.5 rounded-xl border border-border/50 bg-slate-50/50 px-3 py-2.5 text-left text-xs font-bold text-slate-700 hover:bg-slate-100 dark:text-zinc-100 cursor-pointer duration-200"
+                  className="builder-palette-btn flex w-full items-center gap-2 rounded-xl border border-border/50 bg-slate-50/50 px-2.5 py-2 text-left text-[11px] font-bold text-slate-700 hover:bg-slate-100 dark:text-zinc-100 cursor-pointer duration-200"
                 >
                   <Icon className="h-4 w-4 shrink-0 text-slate-400" />
                   <span className="flex-1 truncate">{field.label}</span>
@@ -1192,40 +1212,15 @@ export default function FormBuilderPage() {
                       </div>
 
                       {/* Question Label text */}
+                      {field.type !== "section" && (
                       <div className="builder-field-label font-bold text-xs text-slate-800 dark:text-zinc-100">
                         {field.label || "Untitled Field Question"}
                       </div>
+                      )}
                       
                       {/* Sub-inputs preview */}
                       <div className="mt-2.5">
-                        {field.type === "textarea" ? (
-                          <div className="builder-input-preview w-full h-12 rounded-lg border text-[11px] p-2 italic font-semibold">
-                            {field.placeholder}
-                          </div>
-                        ) : ["dropdown", "radio", "checkbox"].includes(field.type) ? (
-                          <div className="space-y-1.5">
-                            {field.options?.map((opt, oIdx) => (
-                              <div key={oIdx} className="builder-option-text flex items-center gap-2 text-[10px] text-slate-500 dark:text-zinc-300 font-bold">
-                                {field.type === "dropdown" && <span className="text-slate-400 dark:text-zinc-400 font-mono">{oIdx+1}.</span>}
-                                {field.type === "radio" && <span className="h-3 w-3 rounded-full border border-slate-350 dark:border-zinc-500 block shrink-0" />}
-                                {field.type === "checkbox" && <span className="h-3 w-3 rounded border border-slate-350 dark:border-zinc-500 block shrink-0" />}
-                                <span>{opt}</span>
-                              </div>
-                            ))}
-                          </div>
-                        ) : field.type === "rating" ? (
-                          <div className="flex gap-1 text-amber-400">
-                            {[1, 2, 3, 4, 5].map((s) => <Star key={s} className="h-4.5 w-4.5 fill-current" />)}
-                          </div>
-                        ) : field.type === "signature" ? (
-                          <div className="builder-input-preview w-full h-16 rounded-xl border border-dashed flex items-center justify-center text-[10px] font-bold italic text-slate-400">
-                            E-Signature pad
-                          </div>
-                        ) : (
-                          <div className="builder-input-preview w-full py-2 px-3 rounded-lg border text-[11px] italic font-semibold">
-                            {field.placeholder}
-                          </div>
-                        )}
+                        <FormFieldPreview field={field} />
                       </div>
                     </div>
                   );
@@ -1261,36 +1256,136 @@ export default function FormBuilderPage() {
             {selectedFieldId ? (
               <div className="space-y-4 animate-fadeIn flex-1 flex flex-col justify-between">
                 <div className="space-y-4">
+                  {(() => {
+                    const selectedField = activeForm.fields.find((f) => f.id === selectedFieldId);
+                    const fieldConfig = getFieldTypeConfig(selectedField?.type || "");
+                    if (!selectedField) return null;
+
+                    return (
+                      <>
                   {/* Field Label */}
                   <div className="space-y-1">
-                    <label className="builder-panel-title text-[9px] font-black uppercase text-slate-400 tracking-wider">Question Label</label>
+                    <label className="builder-panel-title text-[9px] font-black uppercase text-slate-400 tracking-wider">
+                      {selectedField.type === "section" ? "Section Title" : selectedField.type === "consent" ? "Consent Heading" : "Question Label"}
+                    </label>
                     <input
                       type="text"
-                      value={activeForm.fields.find((f) => f.id === selectedFieldId)?.label || ""}
+                      value={selectedField.label || ""}
                       onChange={(e) => updateFieldDetails(selectedFieldId, { label: e.target.value })}
                       className="premium-input text-xs"
                     />
                   </div>
 
-                  {/* Placeholder hint (Hide for date/rating/signature/file) */}
-                  {!["date", "rating", "signature", "file"].includes(activeForm.fields.find((f) => f.id === selectedFieldId)?.type || "") && (
+                  {/* Placeholder / description */}
+                  {!fieldConfig?.hidePlaceholder && (
                     <div className="space-y-1">
-                      <label className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Placeholder Hint</label>
+                      <label className="text-[9px] font-black uppercase text-slate-400 tracking-wider">
+                        {selectedField.type === "section" ? "Section Description" : selectedField.type === "consent" ? "Agreement Text" : "Placeholder Hint"}
+                      </label>
                       <input
                         type="text"
-                        value={activeForm.fields.find((f) => f.id === selectedFieldId)?.placeholder || ""}
+                        value={selectedField.placeholder || ""}
                         onChange={(e) => updateFieldDetails(selectedFieldId, { placeholder: e.target.value })}
                         className="premium-input text-xs"
                       />
                     </div>
                   )}
 
+                  {selectedField.type === "consent" && (
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Agreement Text</label>
+                      <textarea
+                        value={selectedField.placeholder || ""}
+                        onChange={(e) => updateFieldDetails(selectedFieldId, { placeholder: e.target.value })}
+                        className="premium-input text-xs h-16 resize-none"
+                        placeholder="I agree to the terms and conditions..."
+                      />
+                    </div>
+                  )}
+
+                  {selectedField.type === "section" && (
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Section Description</label>
+                      <textarea
+                        value={selectedField.placeholder || ""}
+                        onChange={(e) => updateFieldDetails(selectedFieldId, { placeholder: e.target.value })}
+                        className="premium-input text-xs h-16 resize-none"
+                        placeholder="Optional instructions for this section..."
+                      />
+                    </div>
+                  )}
+
+                  {selectedField.type === "scale" && (
+                    <div className="space-y-3 pt-1 border-t border-border/40">
+                      <label className="text-[9px] font-black uppercase text-slate-400 tracking-wider block">Scale Range</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-bold text-slate-400">Min</span>
+                          <input
+                            type="number"
+                            min={0}
+                            max={9}
+                            value={selectedField.scaleMin ?? 1}
+                            onChange={(e) => updateFieldDetails(selectedFieldId, { scaleMin: Number(e.target.value) })}
+                            className="premium-input text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-bold text-slate-400">Max</span>
+                          <input
+                            type="number"
+                            min={2}
+                            max={10}
+                            value={selectedField.scaleMax ?? 10}
+                            onChange={(e) => updateFieldDetails(selectedFieldId, { scaleMax: Number(e.target.value) })}
+                            className="premium-input text-xs"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-bold text-slate-400">Low Label</span>
+                          <input
+                            type="text"
+                            value={selectedField.scaleMinLabel || ""}
+                            onChange={(e) => updateFieldDetails(selectedFieldId, { scaleMinLabel: e.target.value })}
+                            className="premium-input text-xs"
+                            placeholder="e.g. Not likely"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-bold text-slate-400">High Label</span>
+                          <input
+                            type="text"
+                            value={selectedField.scaleMaxLabel || ""}
+                            onChange={(e) => updateFieldDetails(selectedFieldId, { scaleMaxLabel: e.target.value })}
+                            className="premium-input text-xs"
+                            placeholder="e.g. Very likely"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedField.type === "currency" && (
+                    <div className="space-y-1 pt-1 border-t border-border/40">
+                      <label className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Currency</label>
+                      <CurrencySelect
+                        value={selectedField.currencyCode || "INR"}
+                        onChange={(code, symbol) =>
+                          updateFieldDetails(selectedFieldId, { currencyCode: code, currencySymbol: symbol })
+                        }
+                      />
+                    </div>
+                  )}
+
                   {/* Required check state toggle */}
+                  {!fieldConfig?.hideRequired && (
                   <div className="flex items-center gap-2.5 select-none pt-1">
                     <input
                       type="checkbox"
                       id="req_toggle"
-                      checked={activeForm.fields.find((f) => f.id === selectedFieldId)?.required || false}
+                      checked={selectedField.required || false}
                       onChange={(e) => updateFieldDetails(selectedFieldId, { required: e.target.checked })}
                       className="rounded border-slate-350 text-primary focus:ring-primary/20 h-4 w-4 cursor-pointer"
                     />
@@ -1298,9 +1393,10 @@ export default function FormBuilderPage() {
                       Mark field as Mandatory
                     </label>
                   </div>
+                  )}
 
                   {/* Multi-choices builder options */}
-                  {["dropdown", "radio", "checkbox"].includes(activeForm.fields.find((f) => f.id === selectedFieldId)?.type || "") && (
+                  {["dropdown", "radio", "checkbox"].includes(selectedField.type) && (
                     <div className="space-y-2.5 pt-2 border-t border-border/40">
                       <label className="text-[9px] font-black uppercase text-slate-400 tracking-wider block">Choices / Options</label>
                       
@@ -1340,6 +1436,9 @@ export default function FormBuilderPage() {
                       </div>
                     </div>
                   )}
+                      </>
+                    );
+                  })()}
                 </div>
 
                 {/* Quick Delete Field button */}
