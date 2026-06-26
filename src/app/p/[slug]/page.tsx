@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Star, Upload, PenTool, CheckCircle2, ChevronRight, ChevronLeft, Mail, Phone, Clock, ArrowRight, ShieldCheck, HelpCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SignaturePad } from "@/components/forms/signature-pad";
 
 interface FormField {
   id: string;
@@ -60,11 +61,6 @@ export default function PublicLandingPage() {
   const [trackingId, setTrackingId] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [uploadingFieldId, setUploadingFieldId] = useState<string | null>(null);
-
-  // Signature States
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [hasSignature, setHasSignature] = useState(false);
 
   useEffect(() => {
     fetchLandingPageDetails();
@@ -189,56 +185,11 @@ export default function PublicLandingPage() {
     }
   };
 
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    ctx.beginPath();
-    const rect = canvas.getBoundingClientRect();
-    const x = ("touches" in e) ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
-    const y = ("touches" in e) ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
-
-    ctx.moveTo(x, y);
-    setIsDrawing(true);
-  };
-
-  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const rect = canvas.getBoundingClientRect();
-    const x = ("touches" in e) ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
-    const y = ("touches" in e) ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
-
-    ctx.lineTo(x, y);
-    ctx.stroke();
-    setHasSignature(true);
-  };
-
-  const stopDrawing = () => {
-    setIsDrawing(false);
-  };
-
-  const clearSignature = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    setHasSignature(false);
-  };
-
   const validateForm = () => {
     if (!connectedForm) return false;
     for (const field of connectedForm.fields) {
       if (field.required) {
         const val = answers[field.id];
-        if (field.type === "signature" && !hasSignature) return false;
         if (val === undefined || val === null || val === "" || (Array.isArray(val) && val.length === 0)) {
           return false;
         }
@@ -251,20 +202,12 @@ export default function PublicLandingPage() {
     e.preventDefault();
     if (!lp || !connectedForm || !validateForm()) return;
 
-    let finalAnswers = { ...answers };
-    const signatureField = connectedForm.fields.find((f) => f.type === "signature");
-    if (signatureField && canvasRef.current && hasSignature) {
-      const signatureDataUrl = canvasRef.current.toDataURL("image/png");
-      finalAnswers[signatureField.id] = signatureDataUrl;
-    }
-
     setSubmitting(true);
     try {
-      // Submit response to connected form endpoint
       const res = await fetch(`/api/forms/${connectedForm.id}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answers: finalAnswers })
+        body: JSON.stringify({ answers })
       });
 
       if (res.ok) {
@@ -536,37 +479,11 @@ export default function PublicLandingPage() {
                             )}
                           </div>
                         ) : field.type === "signature" ? (
-                          <div className="space-y-2 select-none">
-                            <div className="border border-border/80 bg-slate-50/20 rounded-xl overflow-hidden relative">
-                              <canvas
-                                ref={canvasRef}
-                                width={480}
-                                height={150}
-                                onMouseDown={startDrawing}
-                                onMouseMove={draw}
-                                onMouseUp={stopDrawing}
-                                onMouseLeave={stopDrawing}
-                                onTouchStart={startDrawing}
-                                onTouchMove={draw}
-                                onTouchEnd={stopDrawing}
-                                className="w-full h-32 block bg-slate-50/50 cursor-crosshair touch-none"
-                              />
-                              {!hasSignature && (
-                                <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-slate-400 italic pointer-events-none uppercase tracking-wider">
-                                  Draw signature inside canvas
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex justify-end">
-                              <button
-                                type="button"
-                                onClick={clearSignature}
-                                className="text-[10px] font-black text-slate-400 hover:text-slate-600 uppercase tracking-widest cursor-pointer"
-                              >
-                                Clear Canvas
-                              </button>
-                            </div>
-                          </div>
+                          <SignaturePad
+                            value={answers[field.id] || ""}
+                            onChange={(dataUrl) => setAnswers((prev) => ({ ...prev, [field.id]: dataUrl }))}
+                            className="rounded-xl"
+                          />
                         ) : (
                           <input
                             type={field.type === "phone" ? "text" : field.type}

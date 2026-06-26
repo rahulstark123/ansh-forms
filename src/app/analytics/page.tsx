@@ -10,7 +10,6 @@ import {
   FileText,
   Search,
   ArrowUpRight,
-  Loader2,
 } from "lucide-react";
 import {
   Area,
@@ -26,6 +25,8 @@ import {
 } from "recharts";
 import { useUIStore } from "@/stores/ui-store";
 import { cn } from "@/lib/utils";
+import { AnalyticsPageSkeleton } from "@/components/ui/skeleton";
+import { apiClient } from "@/lib/api-client";
 import { isUiOnlyMode } from "@/lib/draft-form";
 import { MOCK_ANALYTICS, MOCK_TREND_DATA } from "@/lib/analytics-mock";
 import {
@@ -59,6 +60,7 @@ export default function AnalyticsPage() {
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<AnalyticItem[]>([]);
+  const [trendData, setTrendData] = useState<{ month: string; views: number; responses: number }[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -68,36 +70,48 @@ export default function AnalyticsPage() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch("/api/forms");
-      if (res.ok) {
-        const json = await res.json();
-        const formsList = json.forms || [];
-        const parsedData: AnalyticItem[] = formsList.map((f: Record<string, unknown>) => {
-          const s =
-            typeof f.settings === "string"
-              ? JSON.parse(f.settings)
-              : (f.settings as Record<string, unknown>) || {};
-          const count = f._count as { submissions?: number } | undefined;
-          const responsesCount = count?.submissions || 0;
-          const views = (f.views as number) || 0;
-          return {
-            id: f.id as string,
-            title: f.title as string,
-            slug: f.slug as string,
-            views,
-            isLandingPage: !!s.isLandingPage,
-            responses: responsesCount,
-            conversion: views > 0 ? Math.round((responsesCount / views) * 1000) / 10 : 0,
-            createdAt: f.createdAt as string,
-          };
-        });
-        setData(parsedData.length === 0 && isUiOnlyMode() ? MOCK_ANALYTICS : parsedData);
-      } else if (isUiOnlyMode()) {
+      const res = await apiClient("/api/analytics");
+      const json = await res.json();
+      const formsList = json.forms || [];
+      const parsedData: AnalyticItem[] = formsList.map((f: Record<string, unknown>) => ({
+        id: f.id as string,
+        title: f.title as string,
+        slug: f.slug as string,
+        views: (f.views as number) || 0,
+        isLandingPage: !!f.isLandingPage,
+        connectedFormSlug: f.connectedFormSlug as string | undefined,
+        responses: (f.responses as number) || 0,
+        conversion: (f.conversion as number) || 0,
+        createdAt: f.createdAt as string,
+      }));
+
+      const apiTrend = (json.trend || []) as { month: string; views: number; responses: number }[];
+
+      if (parsedData.length === 0 && isUiOnlyMode()) {
         setData(MOCK_ANALYTICS);
+        setTrendData(
+          MOCK_TREND_DATA.map((d) => ({
+            month: d.month,
+            views: d.Views,
+            responses: d.Responses,
+          }))
+        );
+      } else {
+        setData(parsedData);
+        setTrendData(apiTrend);
       }
     } catch (err) {
       console.error("Failed to load analytics data:", err);
-      if (isUiOnlyMode()) setData(MOCK_ANALYTICS);
+      if (isUiOnlyMode()) {
+        setData(MOCK_ANALYTICS);
+        setTrendData(
+          MOCK_TREND_DATA.map((d) => ({
+            month: d.month,
+            views: d.Views,
+            responses: d.Responses,
+          }))
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -139,12 +153,6 @@ export default function AnalyticsPage() {
     .slice(0, 5)
     .map((item) => ({ name: item.title, value: item.conversion }));
 
-  const trendData = MOCK_TREND_DATA.map((d) => ({
-    month: d.month,
-    views: d.Views,
-    responses: d.Responses,
-  }));
-
   const sparkViews = trendData.map((d) => ({ x: d.month, y: d.views }));
   const sparkResponses = trendData.map((d) => ({ x: d.month, y: d.responses }));
 
@@ -163,10 +171,7 @@ export default function AnalyticsPage() {
       </div>
 
       {loading ? (
-        <div className="crm-card bg-card border-border/70 p-20 flex flex-col items-center justify-center gap-3">
-          <Loader2 className="h-7 w-7 text-primary animate-spin" />
-          <span className="text-xs font-bold text-slate-400">Analyzing form metrics...</span>
-        </div>
+        <AnalyticsPageSkeleton />
       ) : data.length === 0 ? (
         <div className="crm-card bg-card border-border p-16 text-center space-y-4">
           <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center text-primary mx-auto">

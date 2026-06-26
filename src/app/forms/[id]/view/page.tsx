@@ -23,7 +23,7 @@ const FIELD_TYPES = [
   { type: "time", label: "Time Picker", icon: Clock },
   { type: "rating", label: "Star Rating", icon: Star },
   { type: "file", label: "File Upload", icon: Upload },
-  { type: "signature", label: "Digital Signature", icon: PenTool }
+  { type: "signature", label: "E-Signature", icon: PenTool }
 ];
 
 interface FormField {
@@ -318,7 +318,7 @@ export default function FormViewPage() {
                             </div>
                           ) : field.type === "signature" ? (
                             <div className="builder-input-preview w-full h-16 rounded-xl border border-dashed border-border/60 flex items-center justify-center text-[10px] font-bold italic text-slate-400 bg-slate-50/20 dark:bg-zinc-900/10">
-                              Digital Signature Pad
+                              E-Signature pad
                             </div>
                           ) : (
                             <div className="builder-input-preview w-full py-2 px-3 rounded-lg border text-[11px] italic font-semibold border-border/50 text-slate-400 bg-slate-50/20 dark:bg-zinc-900/10">

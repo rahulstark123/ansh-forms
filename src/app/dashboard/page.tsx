@@ -25,7 +25,9 @@ import {
 import { useUIStore } from "@/stores/ui-store";
 import { Portal } from "@/components/ui/portal";
 import { FORM_TEMPLATES } from "@/config/templates";
+import { FEATURES } from "@/config/features";
 import { cn } from "@/lib/utils";
+import { StatCardSkeleton, ResponseTableSkeleton, TopFormsSkeleton } from "@/components/ui/skeleton";
 import { isUiOnlyMode, openDraftPlayground, mockAiDraftFromPrompt } from "@/lib/draft-form";
 import { apiClient } from "@/lib/api-client";
 
@@ -344,30 +346,32 @@ export default function DashboardPage() {
 
       {/* Aggregate Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: "Total Forms", val: stats.totalForms, unit: "Forms", color: "text-primary", icon: FileText },
-          { label: "Total Views", val: stats.totalViews, unit: "Views", color: "text-sky-500", icon: Eye },
-          { label: "Total Responses", val: stats.totalResponses, unit: "Submissions", color: "text-emerald-500", icon: Inbox },
-          { label: "Conversion Rate", val: stats.avgConversion, unit: "Conversion", color: "text-amber-500", icon: Percent }
-        ].map((item, idx) => {
-          const Icon = item.icon;
-          return (
-            <div key={idx} className="crm-card p-5 relative overflow-hidden bg-card border-border shadow-sm flex flex-col justify-between">
-              <div className="flex justify-between items-start">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                  {item.label}
-                </span>
-                <Icon className={cn("h-4.5 w-4.5", item.color)} />
-              </div>
-              <div className="flex items-baseline gap-1 mt-4">
-                <span className={cn("text-3xl font-black tracking-tight", item.color)}>
-                  {item.val}
-                </span>
-                {item.unit && <span className="text-[10px] font-bold text-slate-400">{item.unit}</span>}
-              </div>
-            </div>
-          );
-        })}
+        {loading
+          ? Array.from({ length: 4 }).map((_, idx) => <StatCardSkeleton key={idx} />)
+          : [
+              { label: "Total Forms", val: stats.totalForms, unit: "Forms", color: "text-primary", icon: FileText },
+              { label: "Total Views", val: stats.totalViews, unit: "Views", color: "text-sky-500", icon: Eye },
+              { label: "Total Responses", val: stats.totalResponses, unit: "Submissions", color: "text-emerald-500", icon: Inbox },
+              { label: "Conversion Rate", val: stats.avgConversion, unit: "Conversion", color: "text-amber-500", icon: Percent },
+            ].map((item, idx) => {
+              const Icon = item.icon;
+              return (
+                <div key={idx} className="crm-card p-5 relative overflow-hidden bg-card border-border shadow-sm flex flex-col justify-between">
+                  <div className="flex justify-between items-start">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                      {item.label}
+                    </span>
+                    <Icon className={cn("h-4.5 w-4.5", item.color)} />
+                  </div>
+                  <div className="flex items-baseline gap-1 mt-4">
+                    <span className={cn("text-3xl font-black tracking-tight", item.color)}>
+                      {item.val}
+                    </span>
+                    {item.unit && <span className="text-[10px] font-bold text-slate-400">{item.unit}</span>}
+                  </div>
+                </div>
+              );
+            })}
       </div>
 
       {/* Quick Actions Panel */}
@@ -386,7 +390,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <span className="text-xs font-black text-slate-800 dark:text-zinc-100 block">Create Form</span>
-                <span className="text-[10px] text-slate-400 font-semibold block mt-0.5">Build a blank or AI form</span>
+                <span className="text-[10px] text-slate-400 font-semibold block mt-0.5">Build a blank or template form</span>
               </div>
             </div>
             <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-primary transition-colors" />
@@ -442,10 +446,7 @@ export default function DashboardPage() {
 
           <div className="crm-card bg-card border-border overflow-hidden min-h-[300px] flex flex-col">
             {loadingResponses ? (
-              <div className="flex-1 flex flex-col items-center justify-center gap-2 p-12 text-slate-400 text-xs font-semibold">
-                <div className="h-6 w-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-                <span>Loading submissions...</span>
-              </div>
+              <ResponseTableSkeleton rows={5} />
             ) : recentResponses.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center text-center p-12 select-none">
                 <Inbox className="h-8 w-8 text-slate-400 mb-3" />
@@ -539,10 +540,7 @@ export default function DashboardPage() {
 
           <div className="crm-card bg-card border-border p-5 space-y-4 min-h-[300px] flex flex-col justify-between">
             {loading ? (
-              <div className="flex-1 flex flex-col items-center justify-center gap-2 text-slate-400 text-xs font-semibold">
-                <div className="h-5 w-5 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-                <span>Computing stats...</span>
-              </div>
+              <TopFormsSkeleton rows={5} />
             ) : topPerformingForms.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center text-center select-none p-6">
                 <TrendingUp className="h-8 w-8 text-slate-400 mb-3" />
@@ -606,7 +604,7 @@ export default function DashboardPage() {
             
             <div className="bg-card w-full max-w-[620px] rounded-3xl border border-border shadow-2xl p-6 relative z-10 animate-fadeInDown flex flex-col max-h-[90vh]">
               <h2 className="text-lg font-black text-slate-800 dark:text-zinc-100 tracking-tight flex items-center gap-2 select-none">
-                <Sparkles className="h-5 w-5 text-primary animate-pulse" />
+                <Plus className="h-5 w-5 text-primary" />
                 <span>Create New Form</span>
               </h2>
               
@@ -615,7 +613,9 @@ export default function DashboardPage() {
                 {[
                   { id: "blank", label: "Blank Form", icon: FileText },
                   { id: "template", label: "Use Template", icon: FileCheck },
-                  { id: "ai", label: "AI Form Generator", icon: Sparkles }
+                  ...(FEATURES.aiFormGenerator
+                    ? [{ id: "ai" as const, label: "AI Form Generator", icon: Sparkles }]
+                    : []),
                 ].map((tab) => {
                   const Icon = tab.icon;
                   return (
@@ -727,7 +727,7 @@ export default function DashboardPage() {
                 )}
 
                 {/* TAB 3: AI PROMPT */}
-                {activeTab === "ai" && (
+                {FEATURES.aiFormGenerator && activeTab === "ai" && (
                   <form onSubmit={handleCreateAI} className="space-y-4 text-left">
                     <p className="text-xs text-slate-400 select-none">
                       Provide a description prompt. The AI Form Generator will construct questions, FAQs, and accent settings automatically.

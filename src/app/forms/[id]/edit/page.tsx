@@ -7,10 +7,12 @@ import {
   Type, Mail, Phone, Hash, AlignLeft, ChevronDown, CheckSquare, Radio, Calendar, Star,
   Upload, PenTool, Plus, Trash2, ArrowUp, ArrowDown, Settings, Palette, Layers,
   Check, Copy, Eye, Save, Sparkles, FileText, Clock, ArrowLeft, X, AlertTriangle,
-  BarChart2, ListOrdered
+  BarChart2, ListOrdered, QrCode
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { buildDraftForm, isDraftFormId, isUiOnlyMode } from "@/lib/draft-form";
+import { getFormPublicUrl } from "@/lib/form-public-url";
+import { FormQrModal } from "@/components/forms/form-qr-modal";
 import ResponsesPage from "../responses/page";
 
 const FIELD_TYPES = [
@@ -26,7 +28,7 @@ const FIELD_TYPES = [
   { type: "time", label: "Time Picker", icon: Clock },
   { type: "rating", label: "Star Rating", icon: Star },
   { type: "file", label: "File Upload", icon: Upload },
-  { type: "signature", label: "Digital Signature", icon: PenTool }
+  { type: "signature", label: "E-Signature", icon: PenTool }
 ];
 
 const DESIGN_BACKGROUNDS = [
@@ -68,6 +70,7 @@ export default function FormBuilderPage() {
   const [newOptionTexts, setNewOptionTexts] = useState<Record<string, string>>({});
   const [copiedLink, setCopiedLink] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
 
   useEffect(() => {
     fetchFormDetails();
@@ -364,9 +367,7 @@ export default function FormBuilderPage() {
 
   const copyPublicLink = () => {
     if (!activeForm) return;
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const url = `${origin}/f/${activeForm.slug}`;
-    navigator.clipboard.writeText(url);
+    navigator.clipboard.writeText(getFormPublicUrl(activeForm.slug));
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
@@ -514,14 +515,25 @@ export default function FormBuilderPage() {
           )}
 
           {activeForm.isPublished && (
-            <button
-              type="button"
-              onClick={copyPublicLink}
-              className="hidden sm:flex items-center gap-1.5 rounded-xl border border-border/80 px-3 py-2 text-[10px] font-bold uppercase tracking-wider hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-            >
-              {copiedLink ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-              <span>Share</span>
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => setQrModalOpen(true)}
+                className="flex items-center gap-1.5 rounded-xl border border-border/80 px-3 py-2 text-[10px] font-bold uppercase tracking-wider hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                title="Show form QR code"
+              >
+                <QrCode className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">QR</span>
+              </button>
+              <button
+                type="button"
+                onClick={copyPublicLink}
+                className="hidden sm:flex items-center gap-1.5 rounded-xl border border-border/80 px-3 py-2 text-[10px] font-bold uppercase tracking-wider hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+              >
+                {copiedLink ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                <span>Share</span>
+              </button>
+            </>
           )}
 
           <a
@@ -1206,8 +1218,8 @@ export default function FormBuilderPage() {
                             {[1, 2, 3, 4, 5].map((s) => <Star key={s} className="h-4.5 w-4.5 fill-current" />)}
                           </div>
                         ) : field.type === "signature" ? (
-                          <div className="builder-input-preview w-full h-16 rounded-xl border border-dashed flex items-center justify-center text-[10px] font-bold italic">
-                            Draw Digital Signature Canvas pad here
+                          <div className="builder-input-preview w-full h-16 rounded-xl border border-dashed flex items-center justify-center text-[10px] font-bold italic text-slate-400">
+                            E-Signature pad
                           </div>
                         ) : (
                           <div className="builder-input-preview w-full py-2 px-3 rounded-lg border text-[11px] italic font-semibold">
@@ -1527,6 +1539,13 @@ export default function FormBuilderPage() {
           </div>
         </div>
       )}
+
+      <FormQrModal
+        open={qrModalOpen && !!activeForm?.isPublished}
+        onClose={() => setQrModalOpen(false)}
+        formTitle={activeForm?.title || "Form"}
+        slug={activeForm?.slug || ""}
+      />
     </div>
   );
 }

@@ -230,7 +230,7 @@ export default async function RootPage() {
   const countryHeader = headersList.get("x-vercel-ip-country") || headersList.get("cf-ipcountry") || "IN";
   const isIndia = countryHeader.toUpperCase() === "IN";
   const freePrice = isIndia ? "₹0" : "$0";
-  const proPrice = isIndia ? "₹199" : "$5";
+  const proPrice = isIndia ? "₹399" : "$5";
 
   return (
     <div className="bg-[#04070f] text-zinc-100 overflow-x-hidden">
@@ -304,90 +304,149 @@ export default async function RootPage() {
               </div>
             </div>
 
-            {/* Right: premium form canvas preview */}
-            <div className="relative group rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-sm p-6 shadow-2xl shadow-cyan-950/20 overflow-hidden">
-              <div className="absolute -right-20 -top-20 w-60 h-60 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute -left-20 -bottom-20 w-60 h-60 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+            {/* Right: workspace dashboard preview */}
+            <div className="relative group rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-sm p-5 md:p-6 shadow-2xl shadow-cyan-950/25 overflow-hidden">
+              <div className="absolute -right-16 -top-16 w-56 h-56 bg-emerald-500/12 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -left-16 -bottom-16 w-56 h-56 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
 
-              <div className="rounded-2xl border border-white/10 bg-[#060b13] overflow-hidden shadow-xl">
-                {/* Browser chrome */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-white/[0.02]">
-                  <div className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full bg-white/10" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-white/10" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-white/10" />
+              <div className="relative rounded-2xl border border-white/10 bg-[#060b13] overflow-hidden shadow-xl">
+                {/* App chrome */}
+                <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/5 bg-white/[0.02]">
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="h-2.5 w-2.5 rounded-full bg-rose-500/80" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/80" />
                   </div>
-                  <div className="px-3 py-1 rounded-md bg-white/[0.03] border border-white/5 text-[9px] text-zinc-400 font-mono flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    forms.anshapps.com/f/feedback
+                  <div className="flex-1 max-w-[220px] px-3 py-1 rounded-md bg-white/[0.03] border border-white/5 text-[9px] text-zinc-400 font-mono truncate">
+                    app.anshapps.com/forms
                   </div>
-                  <span className="text-[9px] font-black uppercase text-emerald-400 tracking-wider">LIVE</span>
+                  <span className="text-[8px] font-black uppercase text-emerald-400 tracking-wider shrink-0">Workspace</span>
                 </div>
 
-                {/* Form fields */}
-                <div className="p-5 space-y-4">
-                  <div className="space-y-1">
-                    <h3 className="text-sm font-bold text-zinc-100">Customer Feedback Hub</h3>
-                    <p className="text-[10px] text-zinc-400">Your opinions shape our future product suites.</p>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Full Name</label>
-                      <div className="h-8 px-2.5 rounded-lg bg-white/[0.02] border border-white/10 text-[10px] text-zinc-300 flex items-center group-hover:border-emerald-500/50 transition-colors">
-                        Ansh Sharma
+                <div className="p-4 md:p-5 space-y-4">
+                  {/* Stats strip */}
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      { label: "Forms", value: "12", tone: "text-emerald-400" },
+                      { label: "Views", value: "4.2k", tone: "text-sky-400" },
+                      { label: "Responses", value: "890", tone: "text-violet-400" },
+                      { label: "Conv.", value: "24%", tone: "text-amber-400" },
+                    ].map((stat) => (
+                      <div key={stat.label} className="rounded-xl border border-white/5 bg-white/[0.02] px-2 py-2 text-center">
+                        <div className={`text-[11px] font-black font-mono leading-none ${stat.tone}`}>{stat.value}</div>
+                        <div className="text-[7px] font-bold text-zinc-500 uppercase tracking-wider mt-1">{stat.label}</div>
                       </div>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Satisfaction Rating</label>
-                      <div className="flex gap-2">
-                        {[1, 2, 3, 4, 5].map((n) => (
-                          <div
-                            key={n}
-                            className={`h-7 flex-1 rounded-md text-[10px] font-bold flex items-center justify-center ${
-                              n === 5
-                                ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black shadow-[0_0_10px_rgba(16,185,129,0.3)]"
-                                : "bg-white/[0.02] border border-white/5 text-zinc-400"
-                            }`}
-                          >
-                            {n}
+                    ))}
+                  </div>
+
+                  {/* Form cards */}
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {[
+                      {
+                        title: "Customer Feedback",
+                        slug: "feedback",
+                        status: "Published",
+                        statusClass: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+                        views: 1284,
+                        responses: 312,
+                        conv: "24.3%",
+                      },
+                      {
+                        title: "Event Registration",
+                        slug: "event-reg",
+                        status: "Draft",
+                        statusClass: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+                        views: 86,
+                        responses: 0,
+                        conv: "0%",
+                      },
+                    ].map((form) => (
+                      <div
+                        key={form.slug}
+                        className="rounded-xl border border-white/8 bg-white/[0.02] p-3 space-y-2.5 group-hover:border-white/15 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-1">
+                          <div className="min-w-0">
+                            <div className="text-[10px] font-bold text-zinc-100 truncate">{form.title}</div>
+                            <div className="text-[8px] text-zinc-500 font-mono truncate">/f/{form.slug}</div>
                           </div>
-                        ))}
+                          <span className={`text-[6px] font-black uppercase px-1.5 py-0.5 rounded border shrink-0 ${form.statusClass}`}>
+                            {form.status}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-1 text-center">
+                          {[
+                            { k: "Views", v: form.views },
+                            { k: "Resp", v: form.responses },
+                            { k: "Conv", v: form.conv },
+                          ].map((m) => (
+                            <div key={m.k} className="rounded-lg bg-black/20 py-1">
+                              <div className="text-[9px] font-black text-zinc-200 font-mono leading-none">{m.v}</div>
+                              <div className="text-[6px] text-zinc-500 font-bold uppercase mt-0.5">{m.k}</div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-zinc-400 uppercase tracking-wider block">Suggestions</label>
-                      <div className="h-12 p-2 rounded-lg bg-white/[0.02] border border-white/10 text-[10px] text-zinc-500 italic select-none">
-                        Excellent ecosystem! Very premium experience.
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                  <div className="h-9 w-full rounded-lg bg-gradient-to-r from-emerald-400 via-sky-400 to-violet-400 p-[1px] shadow-[0_4px_20px_-4px_rgba(16,185,129,0.3)]">
-                    <div className="h-full w-full rounded-[7px] bg-[#070c14] flex items-center justify-center text-[10px] font-bold text-zinc-100 select-none">
-                      Submit Response
+
+                  {/* Recent responses */}
+                  <div className="rounded-xl border border-white/8 bg-white/[0.015] overflow-hidden">
+                    <div className="px-3 py-2 border-b border-white/5 flex items-center justify-between">
+                      <span className="text-[8px] font-black uppercase tracking-wider text-zinc-400">Recent Responses</span>
+                      <span className="text-[7px] font-bold text-emerald-400">Live</span>
+                    </div>
+                    <div className="divide-y divide-white/5">
+                      {[
+                        { name: "Priya M.", form: "Feedback", time: "2m ago", status: "Submitted" },
+                        { name: "Rahul K.", form: "Contact", time: "14m ago", status: "Approved" },
+                        { name: "Sneha D.", form: "Feedback", time: "1h ago", status: "Under Review" },
+                      ].map((row) => (
+                        <div key={row.name + row.time} className="px-3 py-2 flex items-center justify-between gap-2">
+                          <div className="min-w-0">
+                            <div className="text-[9px] font-bold text-zinc-200 truncate">{row.name}</div>
+                            <div className="text-[7px] text-zinc-500 truncate">{row.form} · {row.time}</div>
+                          </div>
+                          <span className="text-[6px] font-black uppercase text-zinc-400 border border-white/10 px-1.5 py-0.5 rounded shrink-0">
+                            {row.status}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Floating palette */}
-              <div className="absolute right-4 bottom-14 p-2.5 rounded-xl border border-white/15 bg-[#09101f]/90 backdrop-blur-md shadow-lg select-none hidden sm:flex flex-col gap-1.5 pointer-events-none translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-                <div className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider">Theme</div>
-                <div className="flex gap-1.5">
-                  <span className="h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-emerald-400/30" />
-                  <span className="h-3 w-3 rounded-full bg-sky-400" />
-                  <span className="h-3 w-3 rounded-full bg-violet-400" />
-                  <span className="h-3 w-3 rounded-full bg-amber-400" />
+              {/* Floating: create form */}
+              <div className="absolute left-3 top-16 sm:left-4 sm:top-[4.5rem] p-2 rounded-xl border border-emerald-500/25 bg-[#09101f]/95 backdrop-blur-md shadow-lg shadow-emerald-950/30 select-none pointer-events-none -translate-x-1 group-hover:translate-x-0 transition-transform duration-500">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-5 w-5 rounded-lg bg-emerald-500 text-slate-950 flex items-center justify-center text-[10px] font-black">+</span>
+                  <div>
+                    <div className="text-[8px] font-black text-zinc-100 uppercase tracking-wider">New Form</div>
+                    <div className="text-[7px] text-zinc-500 font-semibold">Blank or template</div>
+                  </div>
                 </div>
               </div>
 
-              {/* Floating stats */}
-              <div className="absolute left-4 top-20 p-2.5 rounded-xl border border-white/15 bg-[#09101f]/90 backdrop-blur-md shadow-lg select-none hidden sm:block pointer-events-none -translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-                <div className="text-[8px] font-bold text-emerald-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-                  <span className="h-1 w-1 rounded-full bg-emerald-400 animate-ping" />
-                  Live Submissions
+              {/* Floating: analytics */}
+              <div className="absolute right-3 bottom-20 sm:right-4 sm:bottom-24 p-2.5 rounded-xl border border-white/15 bg-[#09101f]/95 backdrop-blur-md shadow-lg select-none pointer-events-none translate-y-1 group-hover:translate-y-0 transition-transform duration-500 w-[108px]">
+                <div className="text-[7px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Traffic</div>
+                <div className="flex items-end gap-0.5 h-8">
+                  {[35, 52, 40, 68, 55, 82, 74].map((h, i) => (
+                    <span
+                      key={i}
+                      className="flex-1 rounded-sm bg-gradient-to-t from-emerald-500/30 to-emerald-400"
+                      style={{ height: `${h}%` }}
+                    />
+                  ))}
                 </div>
-                <div className="text-[12px] font-black text-zinc-100">1,248</div>
-                <div className="text-[8px] text-zinc-400 font-medium">98.4% completion rate</div>
+                <div className="text-[8px] font-black text-emerald-400 mt-1.5">+18% this week</div>
+              </div>
+
+              {/* Floating: share */}
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-3 sm:bottom-4 px-3 py-1.5 rounded-full border border-white/15 bg-[#09101f]/90 backdrop-blur-md shadow-lg select-none pointer-events-none flex items-center gap-2">
+                <QrCode className="h-3 w-3 text-sky-400" />
+                <span className="text-[8px] font-bold text-zinc-300">Share via link or QR</span>
               </div>
             </div>
           </section>

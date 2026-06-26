@@ -2,14 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Plus, Eye, BarChart3, Trash2, Copy, Archive, Check, FileText, Sparkles, Search, ArrowRight, Layers, Pencil, AlertTriangle, ChevronDown, LayoutGrid, List, MoreVertical } from "lucide-react";
+import { Plus, Eye, BarChart3, Trash2, Copy, Archive, Check, FileText, Sparkles, Search, ArrowRight, Layers, Pencil, AlertTriangle, ChevronDown, LayoutGrid, List, MoreVertical, QrCode } from "lucide-react";
 import { useUIStore } from "@/stores/ui-store";
 import { FORM_TEMPLATES } from "@/config/templates";
+import { FEATURES } from "@/config/features";
 import { cn } from "@/lib/utils";
 import { isUiOnlyMode, openDraftPlayground, mockAiDraftFromPrompt } from "@/lib/draft-form";
 import { apiClient } from "@/lib/api-client";
 import { Tooltip } from "@/components/ui/tooltip";
 import { Portal } from "@/components/ui/portal";
+import { FormCardSkeleton, FormTableSkeleton } from "@/components/ui/skeleton";
+import { FormQrModal } from "@/components/forms/form-qr-modal";
+import { getFormPublicUrl } from "@/lib/form-public-url";
 
 interface FormItem {
   id: string;
@@ -63,6 +67,7 @@ export default function FormsPage() {
   const [formToRename, setFormToRename] = useState<FormItem | null>(null);
   const [renameTitle, setRenameTitle] = useState("");
   const [renaming, setRenaming] = useState(false);
+  const [qrForm, setQrForm] = useState<FormItem | null>(null);
 
   useEffect(() => {
     fetchForms();
@@ -361,9 +366,7 @@ export default function FormsPage() {
   };
 
   const handleCopyLink = (slug: string) => {
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const url = `${origin}/f/${slug}`;
-    navigator.clipboard.writeText(url);
+    navigator.clipboard.writeText(getFormPublicUrl(slug));
     setCopiedId(slug);
     useUIStore.getState().addGlobalAlert("success", "Public link copied to clipboard!");
     setTimeout(() => setCopiedId(null), 2000);
@@ -487,6 +490,22 @@ export default function FormsPage() {
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
+                    setOpenActionMenuId(null);
+                    setQrForm(form);
+                  }}
+                  className="w-full flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 text-left cursor-pointer transition-all"
+                >
+                  <QrCode className="h-4 w-4 text-slate-455 dark:text-slate-500" />
+                  <span>Form QR Code</span>
+                </button>
+              )}
+
+              {form.isPublished && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setOpenActionMenuId(null);
                     handleCopyLink(form.slug);
                   }}
                   className="w-full flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 text-left cursor-pointer transition-all"
@@ -646,10 +665,15 @@ export default function FormsPage() {
 
       {/* Forms Grid Cards */}
       {loading ? (
-        <div className="py-20 text-center text-xs font-bold text-slate-400 flex flex-col gap-2 justify-center items-center">
-          <div className="h-7 w-7 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-          <span>Loading forms database...</span>
-        </div>
+        viewMode === "grid" ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <FormCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : (
+          <FormTableSkeleton rows={8} />
+        )
       ) : filteredForms.length === 0 ? (
         <div className="crm-card bg-card border-border/80 p-16 text-center select-none max-w-xl mx-auto space-y-4">
           <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center text-primary mx-auto">
@@ -824,7 +848,7 @@ export default function FormsPage() {
             
             <div className="bg-card w-full max-w-[660px] rounded-3xl border border-border shadow-2xl p-6 relative z-10 animate-fadeInDown flex flex-col max-h-[90vh]">
               <h2 className="text-xl font-black text-slate-800 dark:text-zinc-100 tracking-tight flex items-center gap-2.5 select-none">
-                <Sparkles className="h-5.5 w-5.5 text-primary animate-pulse" />
+                <Plus className="h-5.5 w-5.5 text-primary" />
                 <span>Create New Form</span>
               </h2>
               
@@ -833,7 +857,9 @@ export default function FormsPage() {
                 {[
                   { id: "blank", label: "Blank Form", icon: FileText },
                   { id: "template", label: "Use Template", icon: Layers },
-                  { id: "ai", label: "AI Form Generator", icon: Sparkles }
+                  ...(FEATURES.aiFormGenerator
+                    ? [{ id: "ai" as const, label: "AI Form Generator", icon: Sparkles }]
+                    : []),
                 ].map((tab) => {
                   const Icon = tab.icon;
                   return (
@@ -962,7 +988,7 @@ export default function FormsPage() {
                 )}
 
                 {/* TAB 3: AI PROMPT */}
-                {activeTab === "ai" && (
+                {FEATURES.aiFormGenerator && activeTab === "ai" && (
                   <form onSubmit={handleCreateAI} className="space-y-4">
                     <p className="text-sm text-slate-400 dark:text-slate-500 select-none">
                       Provide a description prompt. The AI Form Generator will construct questions, FAQs, and accent settings automatically.
@@ -1140,6 +1166,13 @@ export default function FormsPage() {
           </div>
         </Portal>
       )}
+
+      <FormQrModal
+        open={!!qrForm}
+        onClose={() => setQrForm(null)}
+        formTitle={qrForm?.title || "Form"}
+        slug={qrForm?.slug || ""}
+      />
     </div>
   );
 }

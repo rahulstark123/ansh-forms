@@ -227,7 +227,7 @@ export default function OnboardingPage() {
       </div>
 
       {/* Right Pane - Form Details Card (White background, light theme inputs, correctly aligned icons) */}
-      <div className="flex-1 flex flex-col justify-center items-center p-6 md:p-12 z-10 overflow-y-auto bg-white text-zinc-900 min-h-screen relative">
+      <div className="light flex-1 flex flex-col justify-center items-center p-6 md:p-12 z-10 overflow-y-auto bg-white text-zinc-900 min-h-screen relative">
         <div className="w-full max-w-[480px] bg-white border border-zinc-200 p-8 md:p-10 rounded-3xl shadow-xl relative">
           
           {/* Form Header */}
@@ -297,33 +297,29 @@ export default function OnboardingPage() {
                 <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest block">
                   Phone Number <span className="text-rose-500">*</span>
                 </label>
-                {/* Clean light theme wrapper for react-phone-number-input */}
-                <div className="w-full flex items-center pl-3 pr-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 focus-within:border-primary/50 text-sm font-semibold text-zinc-900 outline-none transition-all focus-within:bg-white">
+                <div className="onboarding-phone-field w-full flex items-center gap-1 pl-3 pr-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 focus-within:border-emerald-500/40 focus-within:ring-2 focus-within:ring-emerald-500/10 focus-within:bg-white transition-all">
                   <PhoneInput
                     international
                     defaultCountry="IN"
                     value={phone}
                     onChange={setPhone}
                     placeholder="Enter phone number"
-                    className="w-full text-xs"
-                    numberInputProps={{
-                      className: "w-full bg-transparent border-none outline-none text-sm font-semibold text-zinc-900 pl-2 placeholder:text-zinc-400"
-                    }}
+                    className="w-full"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[9px] font-black text-zinc-550 uppercase tracking-widest block">
+                  <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest block">
                     Your Job Title
                   </label>
-                  <div className="relative">
-                    <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-zinc-400 pointer-events-none" />
+                  <div className="group relative">
+                    <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none z-10" />
                     <select
                       value={jobTitle}
                       onChange={(e) => setJobTitle(e.target.value)}
-                      className="w-full pl-11 pr-10 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 focus:border-primary/50 text-sm font-semibold text-zinc-900 outline-none transition-all focus:bg-white appearance-none cursor-pointer"
+                      className="w-full pl-11 pr-12 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-sm font-semibold text-zinc-900 outline-none transition-all appearance-none cursor-pointer hover:border-zinc-300 hover:bg-zinc-100/60 focus:border-emerald-500/40 focus:bg-white focus:ring-2 focus:ring-emerald-500/10"
                     >
                       <option value="Founder">Founder</option>
                       <option value="Product Manager">Product Manager</option>
@@ -333,20 +329,22 @@ export default function OnboardingPage() {
                       <option value="HR Manager">HR Manager</option>
                       <option value="Other">Other</option>
                     </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none flex h-7 w-7 items-center justify-center rounded-lg bg-white border border-zinc-200/80 shadow-sm group-hover:border-zinc-300 transition-colors">
+                      <ChevronDown className="h-3.5 w-3.5 text-zinc-500" />
+                    </span>
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[9px] font-black text-zinc-550 uppercase tracking-widest block">
+                  <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest block">
                     Department
                   </label>
-                  <div className="relative">
-                    <Building className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-zinc-400 pointer-events-none" />
+                  <div className="group relative">
+                    <Building className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none z-10" />
                     <select
                       value={department}
                       onChange={(e) => setDepartment(e.target.value)}
-                      className="w-full pl-11 pr-10 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 focus:border-primary/50 text-sm font-semibold text-zinc-900 outline-none transition-all focus:bg-white appearance-none cursor-pointer"
+                      className="w-full pl-11 pr-12 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-sm font-semibold text-zinc-900 outline-none transition-all appearance-none cursor-pointer hover:border-zinc-300 hover:bg-zinc-100/60 focus:border-emerald-500/40 focus:bg-white focus:ring-2 focus:ring-emerald-500/10"
                     >
                       <option value="Executive">Executive</option>
                       <option value="Product">Product</option>
@@ -356,7 +354,9 @@ export default function OnboardingPage() {
                       <option value="Support">Support</option>
                       <option value="Other">Other</option>
                     </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none flex h-7 w-7 items-center justify-center rounded-lg bg-white border border-zinc-200/80 shadow-sm group-hover:border-zinc-300 transition-colors">
+                      <ChevronDown className="h-3.5 w-3.5 text-zinc-500" />
+                    </span>
                   </div>
                 </div>
               </div>
@@ -397,12 +397,12 @@ export default function OnboardingPage() {
                 <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest block">
                   Workspace Industry
                 </label>
-                <div className="relative">
-                  <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-zinc-400 pointer-events-none" />
+                <div className="group relative">
+                  <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none z-10" />
                   <select
                     value={industry}
                     onChange={(e) => setIndustry(e.target.value)}
-                    className="w-full pl-11 pr-10 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 focus:border-primary/50 text-sm font-semibold text-zinc-900 outline-none transition-all focus:bg-white appearance-none cursor-pointer"
+                    className="w-full pl-11 pr-12 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-sm font-semibold text-zinc-900 outline-none transition-all appearance-none cursor-pointer hover:border-zinc-300 hover:bg-zinc-100/60 focus:border-emerald-500/40 focus:bg-white focus:ring-2 focus:ring-emerald-500/10"
                   >
                     <option value="Software">Software &amp; IT</option>
                     <option value="E-Commerce">E-Commerce / Retail</option>
@@ -412,7 +412,9 @@ export default function OnboardingPage() {
                     <option value="Non-profit">Non-profit</option>
                     <option value="Other">Other</option>
                   </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none flex h-7 w-7 items-center justify-center rounded-lg bg-white border border-zinc-200/80 shadow-sm group-hover:border-zinc-300 transition-colors">
+                    <ChevronDown className="h-3.5 w-3.5 text-zinc-500" />
+                  </span>
                 </div>
               </div>
 

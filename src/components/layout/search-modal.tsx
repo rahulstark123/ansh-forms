@@ -6,6 +6,7 @@ import { Search, FileText, Globe, Layers, BarChart3, CreditCard, User, Settings 
 import { useUIStore } from "@/stores/ui-store";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import { FEATURES } from "@/config/features";
 
 interface SearchAsset {
   id: string;
@@ -72,7 +73,9 @@ export function SearchModal() {
     { title: "Dashboard", url: "/dashboard", icon: Layers, description: "Overview statistics, response conversions, and metrics" },
     { title: "My Forms", url: "/forms", icon: FileText, description: "Create, customize, and publish response gathering forms" },
     { title: "Landing Pages", url: "/landing-pages", icon: Globe, description: "Manage landing pages and custom domain targets" },
-    { title: "AI Builder", url: "/ai-builder", icon: Settings, description: "Generate schemas and fields via AI prompt logic" },
+    ...(FEATURES.aiFormGenerator
+      ? [{ title: "AI Builder", url: "/ai-builder", icon: Settings, description: "Generate schemas and fields via AI prompt logic" }]
+      : []),
     { title: "Analytics", url: "/analytics", icon: BarChart3, description: "Review form response reports and category distributions" },
     { title: "Pricing & Billing", url: "/pricing", icon: CreditCard, description: "View subscription plans, feature limits, and billing tiers" },
     { title: "Profile Settings", url: "/settings?tab=profile", icon: User, description: "Manage your account profile details and contact info" },
