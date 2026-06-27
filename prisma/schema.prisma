@@ -27,6 +27,8 @@ model Profile {
   accent                 String    @default("emerald")
   wid                    Int       @default(1)
   hasCompletedOnboarding Boolean   @default(false)
+  acceptedPolicies       Boolean   @default(false)
+  policiesAcceptedAt     DateTime?
   pricingPlan            String    @default("Free Trial") // "Free", "Free Trial", or "Pro"
   trialEndsAt            DateTime? // When the 14-day trial ends
   // Extended profile fields

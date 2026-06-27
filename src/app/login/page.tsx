@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useUIStore } from "@/stores/ui-store";
@@ -152,6 +153,7 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [acceptedPolicies, setAcceptedPolicies] = useState(false);
 
   // Password Requirements (for Sign Up)
   const [hasMinLength, setHasMinLength] = useState(false);
@@ -310,6 +312,11 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
       return;
     }
 
+    if (!acceptedPolicies) {
+      setError("Please accept the Terms & Conditions and Privacy Policy to continue.");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const { data, error: authError } = await supabase.auth.signUp({
@@ -336,6 +343,7 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
             id: data.user.id,
             email: data.user.email,
             name,
+            acceptedPolicies: true,
           }),
         });
 
@@ -390,6 +398,7 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
   const toggleAuthMode = () => {
     setError("");
     setIsForgotPassword(false);
+    setAcceptedPolicies(false);
     setIsSignUp(!isSignUp);
   };
 
@@ -784,10 +793,32 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
               </div>
             )}
 
+            {isSignUp && (
+              <label className="flex items-start gap-2.5 cursor-pointer select-none animate-fadeInDown">
+                <input
+                  type="checkbox"
+                  checked={acceptedPolicies}
+                  onChange={(e) => setAcceptedPolicies(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500/30 cursor-pointer shrink-0"
+                />
+                <span className="text-[11px] text-zinc-600 font-semibold leading-relaxed">
+                  I agree to the{" "}
+                  <Link href="/terms" target="_blank" className="text-emerald-600 hover:text-emerald-500 font-bold underline underline-offset-2">
+                    Terms & Conditions
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/privacy" target="_blank" className="text-emerald-600 hover:text-emerald-500 font-bold underline underline-offset-2">
+                    Privacy Policy
+                  </Link>
+                  .
+                </span>
+              </label>
+            )}
+
             {/* Submit Button */}
             <button 
               type="submit"
-              disabled={isLoading || isGoogleLoading}
+              disabled={isLoading || isGoogleLoading || (isSignUp && !acceptedPolicies)}
               className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-indigo-500 hover:from-emerald-500/95 hover:to-indigo-500/95 text-white font-extrabold text-xs uppercase tracking-widest transition-all shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 hover:scale-[1.01] duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:pointer-events-none mt-2"
             >
               {isLoading ? (

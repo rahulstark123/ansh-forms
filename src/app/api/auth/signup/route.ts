@@ -4,10 +4,14 @@ import { resolveUniqueWorkspaceSlug } from "@/lib/workspace-slug";
 
 export async function POST(request: Request) {
   try {
-    const { id, email, name } = await request.json();
+    const { id, email, name, acceptedPolicies } = await request.json();
 
     if (!id || !email || !name) {
       return NextResponse.json({ error: "Missing required profile details." }, { status: 400 });
+    }
+
+    if (!acceptedPolicies) {
+      return NextResponse.json({ error: "You must accept the Terms & Conditions and Privacy Policy." }, { status: 400 });
     }
 
     // Check if user already exists
@@ -48,6 +52,8 @@ export async function POST(request: Request) {
         name,
         wid: nextWid,
         hasCompletedOnboarding: false,
+        acceptedPolicies: true,
+        policiesAcceptedAt: new Date(),
         pricingPlan: "Free Trial",
         trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
       },

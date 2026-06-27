@@ -46,6 +46,8 @@ export async function POST(request: Request) {
           name,
           wid: nextWid,
           hasCompletedOnboarding: false,
+          acceptedPolicies: true,
+          policiesAcceptedAt: new Date(),
           pricingPlan: "Free Trial",
           trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
         },
