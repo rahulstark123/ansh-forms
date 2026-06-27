@@ -17,6 +17,10 @@ export async function GET(req: Request) {
     const tickets = await db.supportTicket.findMany({
       where: email ? { email } : undefined,
       orderBy: { createdAt: "desc" },
+      include: {
+        replies: { orderBy: { createdAt: "asc" } },
+        _count: { select: { replies: true } },
+      },
     });
 
     return NextResponse.json({ tickets });

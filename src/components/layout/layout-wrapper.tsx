@@ -5,7 +5,7 @@ import { AppShell } from "./app-shell";
 import { FormBuilderShell } from "./form-builder-shell";
 import { useUIStore } from "@/stores/ui-store";
 import { useEffect } from "react";
-import { isPublicFormPath } from "@/lib/public-routes";
+import { isMobileBlockExemptRoute } from "@/lib/responsive-breakpoints";
 
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -36,14 +36,8 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   }, [theme, user?.accent]);
 
   // Public and Auth routes that don't need the dashboard sidebar shell
-  const isMarketingHome = pathname === "/";
-  const isAuthRoute = pathname === "/login" || pathname === "/signup" || pathname === "/reset-password";
-  const isPublicRoute = isPublicFormPath(pathname) || pathname.startsWith("/p/");
-  const isLegalRoute = pathname === "/privacy" || pathname === "/terms";
-  const isOnboardingRoute = pathname === "/onboarding";
-  const isFormBuilderRoute = /^\/forms\/[^/]+\/edit$/.test(pathname);
-
-  const isPlainLayout = isMarketingHome || isAuthRoute || isPublicRoute || isLegalRoute || isOnboardingRoute;
+  const isFormBuilderRoute = /^\/forms\/[^/]+\/edit$/.test(pathname ?? "");
+  const isPlainLayout = isMobileBlockExemptRoute(pathname);
 
   if (isFormBuilderRoute) {
     return <FormBuilderShell>{children}</FormBuilderShell>;

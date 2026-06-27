@@ -2,6 +2,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { headers } from "next/headers";
 import { ArrowRight, BarChart3, Check, CheckCircle2, ChevronDown, FileText, FolderOpen, Layers, Mail, Palette, QrCode, Sparkles, Wand2, X, Zap } from "lucide-react";
+import {
+  FREE_PLAN_EXCLUDED,
+  FREE_PLAN_INCLUDED,
+  PRO_PLAN_FEATURES,
+  PRICING_COPY,
+} from "@/lib/plan-features";
+import "./landing.css";
 
 /* ─── Features grid data ───────────────────────────────── */
 const FEATURES = [
@@ -107,7 +114,7 @@ const APPS = [
     href: "https://visitor.anshapps.com",
     img: "/ANSH Visitor.jpg",
     status: "LIVE",
-    statusColor: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+    statusColor: "text-violet-400 bg-violet-500/10 border-violet-500/20",
     hoverBorder: "hover:border-emerald-500/50",
     hoverShadow: "hover:shadow-[0_4px_30px_rgba(16,185,129,0.18)]",
     dot: "bg-emerald-400",
@@ -122,10 +129,10 @@ const APPS = [
     href: "#",
     img: null,
     status: "ACTIVE",
-    statusColor: "text-slate-950 bg-emerald-500 border-emerald-400",
+    statusColor: "text-white bg-gradient-to-r from-[#2563EB] to-[#9333EA] border-violet-500/30",
     hoverBorder: "",
     hoverShadow: "",
-    dot: "bg-emerald-400",
+    dot: "bg-violet-400",
     isHere: true,
     isSoon: false,
   },
@@ -133,7 +140,7 @@ const APPS = [
 
 /* ─── Single card component (used in marquee rows) ─────── */
 function AppCard({ app }: { app: typeof APPS[number] }) {
-  const cardClass = `flex-shrink-0 w-[340px] rounded-2xl border border-white/10 bg-[#070b13]/80 p-5 transition-all duration-300 mx-4 group/card ${app.hoverBorder} ${app.hoverShadow} hover:scale-[1.02] hover:bg-[#070b13]`;
+  const cardClass = `flex-shrink-0 w-[340px] rounded-2xl border border-white/10 bg-zinc-950/80 p-5 transition-all duration-300 mx-4 group/card ${app.hoverBorder} ${app.hoverShadow} hover:scale-[1.02] hover:bg-zinc-950`;
 
   const cardInner = (
     <>
@@ -159,33 +166,33 @@ function AppCard({ app }: { app: typeof APPS[number] }) {
 
   if (app.isHere) {
     return (
-      <div className="relative flex-shrink-0 w-[340px] rounded-2xl border-2 border-emerald-500 bg-[#070b13] p-5 shadow-[0_4px_30px_rgba(16,185,129,0.28)] mx-4">
-        <div className="absolute -top-3.5 left-4 bg-emerald-500 text-slate-950 font-black px-3 py-0.5 rounded-full text-[7px] uppercase tracking-widest flex items-center gap-1 shadow-lg border border-emerald-400">
-          <span className="h-1 w-1 rounded-full bg-slate-950 animate-pulse" />
+      <div className="relative flex-shrink-0 w-[340px] rounded-2xl border-2 border-violet-500 bg-[#09090b] p-5 shadow-[0_4px_30px_rgba(139,92,246,0.28)] mx-4">
+        <div className="absolute -top-3.5 left-4 landing-btn-primary font-black px-3 py-0.5 rounded-full text-[7px] uppercase tracking-widest flex items-center gap-1 shadow-lg">
+          <span className="h-1 w-1 rounded-full bg-white animate-pulse" />
           YOU ARE HERE
         </div>
-        <div className="w-full h-[148px] rounded-xl border border-emerald-500/20 bg-slate-950/60 p-3 flex flex-col justify-center gap-2.5">
+        <div className="w-full h-[148px] rounded-xl border border-violet-500/20 bg-zinc-950/60 p-3 flex flex-col justify-center gap-2.5">
           <div className="h-7 w-full rounded border border-white/10 bg-white/[0.03] px-2 flex items-center text-[7px] text-zinc-300 justify-between">
             <div className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-full bg-violet-400 animate-pulse" />
               <span>Customer Feedback Form</span>
             </div>
-            <span className="text-[6px] text-emerald-400 font-bold">Live</span>
+            <span className="text-[6px] text-violet-400 font-bold">Live</span>
           </div>
           <div className="h-7 w-full rounded border border-white/5 bg-white/[0.01] px-2 flex items-center text-[7px] text-zinc-500 justify-between">
             <span>Input: Professional Email</span>
             <span className="text-[5px] text-zinc-500 px-1 rounded border border-white/5">Email</span>
           </div>
-          <div className="h-7 w-full rounded bg-emerald-500 text-slate-950 text-[8px] font-black uppercase tracking-wider flex items-center justify-center shadow-[0_2px_10px_rgba(16,185,129,0.2)]">
+          <div className="h-7 w-full rounded landing-btn-cta text-[8px] font-black uppercase tracking-wider flex items-center justify-center">
             Publish Forms
           </div>
         </div>
         <div className="flex items-center justify-between mt-3.5 mb-1">
           <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+            <span className="h-2.5 w-2.5 rounded-full bg-violet-400" />
             <span className="text-xs font-black text-zinc-100 uppercase tracking-wider">ANSH Forms</span>
           </div>
-          <span className="text-slate-950 bg-emerald-500 px-1.5 py-0.5 rounded text-[8px] font-black uppercase border border-emerald-400">ACTIVE</span>
+          <span className="text-white landing-btn-primary px-1.5 py-0.5 rounded text-[8px] font-black uppercase">ACTIVE</span>
         </div>
         <p className="text-[11px] font-bold text-zinc-200 truncate">{app.tagline}</p>
         <p className="text-[10px] text-zinc-400 mt-0.5 truncate">{app.desc}</p>
@@ -195,7 +202,7 @@ function AppCard({ app }: { app: typeof APPS[number] }) {
 
   if (app.isSoon) {
     return (
-      <div className={`flex-shrink-0 w-[340px] rounded-2xl border border-white/10 bg-[#070b13]/80 p-5 transition-all duration-300 mx-4 ${app.hoverBorder} ${app.hoverShadow} hover:scale-[1.02]`}>
+      <div className={`flex-shrink-0 w-[340px] rounded-2xl border border-white/10 bg-zinc-950/80 p-5 transition-all duration-300 mx-4 ${app.hoverBorder} ${app.hoverShadow} hover:scale-[1.02]`}>
         <div className="relative w-full h-[148px] rounded-xl bg-gradient-to-br from-[#180f22] to-[#0d0714] border border-pink-500/10 flex flex-col items-center justify-center gap-2 overflow-hidden">
           <div className="absolute top-2 right-2 bg-pink-500/10 text-pink-400 border border-pink-500/20 px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider">BUILDING</div>
           <div className="h-10 w-10 rounded-full border border-dashed border-pink-500/40 flex items-center justify-center animate-[spin_12s_linear_infinite]">
@@ -233,16 +240,19 @@ export default async function RootPage() {
   const proPrice = isIndia ? "₹399" : "$5";
 
   return (
-    <div className="bg-[#04070f] text-zinc-100 overflow-x-hidden">
+    <div className="landing-page bg-zinc-950 text-zinc-100 overflow-x-hidden">
 
-      {/* Global ambient gradients — fixed behind everything */}
-      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_20%_0%,rgba(16,185,129,0.14),transparent_38%),radial-gradient(circle_at_100%_20%,rgba(14,165,233,0.14),transparent_42%),linear-gradient(145deg,#04070f_0%,#071222_55%,#0b1a2b_100%)]" />
+      {/* Brand ambient glow blobs */}
+      <div className="fixed top-0 left-0 w-[520px] h-[520px] landing-glow-cyan rounded-full pointer-events-none -translate-x-1/3 -translate-y-1/3" />
+      <div className="fixed top-0 right-0 w-[420px] h-[420px] landing-glow-violet rounded-full pointer-events-none translate-x-1/3 -translate-y-1/4" />
+      <div className="fixed bottom-0 left-0 w-[520px] h-[520px] landing-glow-magenta rounded-full pointer-events-none -translate-x-1/4 translate-y-1/3" />
+      <div className="fixed inset-0 pointer-events-none bg-zinc-950" />
       <div className="fixed inset-0 landing-grid-bg opacity-20 pointer-events-none" />
 
       {/* ── HERO SCREEN ─────────────────────────────────────────── */}
       <div className="relative z-10 min-h-screen flex flex-col">
 
-        <header className="w-full px-6 md:px-12 py-5 flex items-center justify-between border-b border-white/10 backdrop-blur-sm bg-[#04070f]/60 sticky top-0 z-20">
+        <header className="w-full px-6 md:px-12 py-5 flex items-center justify-between border-b border-white/10 backdrop-blur-sm bg-zinc-950/60 sticky top-0 z-20">
           <div className="flex items-center gap-3">
             <Image src="/logoAnshapps.png" alt="ANSH Apps Logo" width={40} height={40} className="h-10 w-10 object-contain" priority />
             <div>
@@ -267,13 +277,13 @@ export default async function RootPage() {
           <section className="w-full max-w-7xl mx-auto px-6 md:px-12 py-10 grid lg:grid-cols-[1.1fr_1fr] gap-12 items-center">
             {/* Left: copy */}
             <div className="space-y-6">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/25 bg-primary/10 text-primary text-[10px] font-black tracking-widest uppercase">
+              <span className="landing-badge inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase">
                 <Wand2 className="h-3.5 w-3.5" />
                 Built for High-Growth Teams &amp; Enterprises
               </span>
               <h1 className="text-4xl md:text-5xl xl:text-6xl font-black tracking-tight leading-[1.05]">
                 Run your complete
-                <span className="block bg-gradient-to-r from-emerald-400 via-sky-400 to-violet-400 bg-clip-text text-transparent">
+                <span className="block landing-brand-gradient">
                   Forms &amp; Response Ops
                 </span>
                 in one simple workspace
@@ -289,13 +299,13 @@ export default async function RootPage() {
                   "Integrated analytics insights",
                 ].map((point) => (
                   <div key={point} className="flex items-start gap-2 text-[11px] font-semibold text-zinc-300">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <Check className="h-4 w-4 text-violet-400 shrink-0 mt-0.5" />
                     <span>{point}</span>
                   </div>
                 ))}
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <Link href="/signup" className="px-5 py-3 rounded-xl bg-primary text-primary-foreground text-xs font-black uppercase tracking-wider hover:opacity-90 inline-flex items-center gap-2 transition-opacity shadow-lg shadow-primary/20">
+                <Link href="/signup" className="px-5 py-3 rounded-xl landing-btn-primary text-xs font-black uppercase tracking-wider hover:opacity-90 inline-flex items-center gap-2 transition-opacity">
                   Start 14-Day Free Trial <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
                 <Link href="/login" className="px-5 py-3 rounded-xl border border-white/15 text-xs font-bold uppercase tracking-wider hover:bg-white/5 transition-colors">
@@ -306,28 +316,28 @@ export default async function RootPage() {
 
             {/* Right: workspace dashboard preview */}
             <div className="relative group rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-sm p-5 md:p-6 shadow-2xl shadow-cyan-950/25 overflow-hidden">
-              <div className="absolute -right-16 -top-16 w-56 h-56 bg-emerald-500/12 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute -left-16 -bottom-16 w-56 h-56 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -right-16 -top-16 w-56 h-56 bg-[#00C6FF]/5 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -left-16 -bottom-16 w-56 h-56 bg-[#7000FF]/5 rounded-full blur-3xl pointer-events-none" />
 
-              <div className="relative rounded-2xl border border-white/10 bg-[#060b13] overflow-hidden shadow-xl">
+              <div className="relative rounded-2xl border border-white/10 bg-zinc-950 overflow-hidden shadow-xl">
                 {/* App chrome */}
                 <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-white/5 bg-white/[0.02]">
                   <div className="flex items-center gap-1.5 shrink-0">
                     <span className="h-2.5 w-2.5 rounded-full bg-rose-500/80" />
                     <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/80" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-violet-500/80" />
                   </div>
                   <div className="flex-1 max-w-[220px] px-3 py-1 rounded-md bg-white/[0.03] border border-white/5 text-[9px] text-zinc-400 font-mono truncate">
                     app.anshapps.com/forms
                   </div>
-                  <span className="text-[8px] font-black uppercase text-emerald-400 tracking-wider shrink-0">Workspace</span>
+                  <span className="text-[8px] font-black uppercase text-violet-400 tracking-wider shrink-0">Workspace</span>
                 </div>
 
                 <div className="p-4 md:p-5 space-y-4">
                   {/* Stats strip */}
                   <div className="grid grid-cols-4 gap-2">
                     {[
-                      { label: "Forms", value: "12", tone: "text-emerald-400" },
+                      { label: "Forms", value: "12", tone: "text-violet-400" },
                       { label: "Views", value: "4.2k", tone: "text-sky-400" },
                       { label: "Responses", value: "890", tone: "text-violet-400" },
                       { label: "Conv.", value: "24%", tone: "text-amber-400" },
@@ -346,7 +356,7 @@ export default async function RootPage() {
                         title: "Customer Feedback",
                         slug: "feedback",
                         status: "Published",
-                        statusClass: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+                        statusClass: "text-violet-400 bg-violet-500/10 border-violet-500/20",
                         views: 1284,
                         responses: 312,
                         conv: "24.3%",
@@ -394,7 +404,7 @@ export default async function RootPage() {
                   <div className="rounded-xl border border-white/8 bg-white/[0.015] overflow-hidden">
                     <div className="px-3 py-2 border-b border-white/5 flex items-center justify-between">
                       <span className="text-[8px] font-black uppercase tracking-wider text-zinc-400">Recent Responses</span>
-                      <span className="text-[7px] font-bold text-emerald-400">Live</span>
+                      <span className="text-[7px] font-bold text-violet-400">Live</span>
                     </div>
                     <div className="divide-y divide-white/5">
                       {[
@@ -418,9 +428,9 @@ export default async function RootPage() {
               </div>
 
               {/* Floating: create form */}
-              <div className="absolute left-3 top-16 sm:left-4 sm:top-[4.5rem] p-2 rounded-xl border border-emerald-500/25 bg-[#09101f]/95 backdrop-blur-md shadow-lg shadow-emerald-950/30 select-none pointer-events-none -translate-x-1 group-hover:translate-x-0 transition-transform duration-500">
+              <div className="absolute left-3 top-16 sm:left-4 sm:top-[4.5rem] p-2 rounded-xl border border-violet-500/25 bg-[#09090b]/95 backdrop-blur-md shadow-lg shadow-violet-950/30 select-none pointer-events-none -translate-x-1 group-hover:translate-x-0 transition-transform duration-500">
                 <div className="flex items-center gap-1.5">
-                  <span className="h-5 w-5 rounded-lg bg-emerald-500 text-slate-950 flex items-center justify-center text-[10px] font-black">+</span>
+                  <span className="h-5 w-5 rounded-lg landing-btn-primary flex items-center justify-center text-[10px] font-black">+</span>
                   <div>
                     <div className="text-[8px] font-black text-zinc-100 uppercase tracking-wider">New Form</div>
                     <div className="text-[7px] text-zinc-500 font-semibold">Blank or template</div>
@@ -429,23 +439,23 @@ export default async function RootPage() {
               </div>
 
               {/* Floating: analytics */}
-              <div className="absolute right-3 bottom-20 sm:right-4 sm:bottom-24 p-2.5 rounded-xl border border-white/15 bg-[#09101f]/95 backdrop-blur-md shadow-lg select-none pointer-events-none translate-y-1 group-hover:translate-y-0 transition-transform duration-500 w-[108px]">
+              <div className="absolute right-3 bottom-20 sm:right-4 sm:bottom-24 p-2.5 rounded-xl border border-white/15 bg-zinc-950/95 backdrop-blur-md shadow-lg select-none pointer-events-none translate-y-1 group-hover:translate-y-0 transition-transform duration-500 w-[108px]">
                 <div className="text-[7px] font-bold text-zinc-400 uppercase tracking-wider mb-1.5">Traffic</div>
                 <div className="flex items-end gap-0.5 h-8">
                   {[35, 52, 40, 68, 55, 82, 74].map((h, i) => (
                     <span
                       key={i}
-                      className="flex-1 rounded-sm bg-gradient-to-t from-emerald-500/30 to-emerald-400"
+                      className="flex-1 rounded-sm bg-gradient-to-t from-violet-500/30 to-[#4dc4ff]"
                       style={{ height: `${h}%` }}
                     />
                   ))}
                 </div>
-                <div className="text-[8px] font-black text-emerald-400 mt-1.5">+18% this week</div>
+                <div className="text-[8px] font-black text-violet-400 mt-1.5">+18% this week</div>
               </div>
 
               {/* Floating: share */}
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-3 sm:bottom-4 px-3 py-1.5 rounded-full border border-white/15 bg-[#09101f]/90 backdrop-blur-md shadow-lg select-none pointer-events-none flex items-center gap-2">
-                <QrCode className="h-3 w-3 text-sky-400" />
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-3 sm:bottom-4 px-3 py-1.5 rounded-full border border-white/15 bg-zinc-950/90 backdrop-blur-md shadow-lg select-none pointer-events-none flex items-center gap-2">
+                <QrCode className="h-3 w-3 text-[#4dc4ff]" />
                 <span className="text-[8px] font-bold text-zinc-300">Share via link or QR</span>
               </div>
             </div>
@@ -458,9 +468,9 @@ export default async function RootPage() {
         {/* Header row */}
         <div className="w-full px-6 md:px-14 flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
           <div className="space-y-1">
-            <span className="text-[10px] font-black uppercase text-emerald-400 tracking-widest block">ECOSYSTEM</span>
+            <span className="text-[10px] font-black uppercase text-violet-400 tracking-widest block">ECOSYSTEM</span>
             <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-              The full <span className="bg-gradient-to-r from-emerald-400 to-sky-400 bg-clip-text text-transparent">Ansh Apps</span> suite
+              The full <span className="landing-brand-gradient">Ansh Apps</span> suite
             </h2>
           </div>
           <p className="text-xs text-zinc-400 font-semibold max-w-sm leading-relaxed md:text-right">
@@ -488,7 +498,7 @@ export default async function RootPage() {
         {/* Features grid */}
         <section id="features" className="pt-8">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <span className="text-[10px] font-black uppercase text-emerald-400 tracking-widest block">Capabilities</span>
+            <span className="text-[10px] font-black uppercase text-violet-400 tracking-widest block">Capabilities</span>
             <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white">
               Power Your Entire Response Operations Natively
             </h2>
@@ -501,8 +511,8 @@ export default async function RootPage() {
             {FEATURES.map((item) => {
               const Icon = item.icon;
               return (
-                <div key={item.title} className="rounded-2xl border border-white/10 bg-[#070b13]/60 p-6 flex flex-col items-start gap-4 hover:border-emerald-500/40 hover:bg-[#070b13]/90 transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_4px_30px_rgba(16,185,129,0.06)] group">
-                  <div className="h-10 w-10 rounded-xl border border-emerald-500/20 bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500/20 group-hover:text-emerald-300 transition-colors duration-300">
+                <div key={item.title} className="rounded-2xl border border-white/10 bg-zinc-950/60 p-6 flex flex-col items-start gap-4 hover:border-violet-500/30 hover:bg-zinc-950/90 transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_4px_30px_rgba(139,92,246,0.06)] group">
+                  <div className="h-10 w-10 rounded-xl landing-icon-circle flex items-center justify-center group-hover:bg-violet-500/20 group-hover:text-violet-300 transition-colors duration-300">
                     <Icon className="h-5 w-5" />
                   </div>
                   <div className="space-y-2">
@@ -518,21 +528,24 @@ export default async function RootPage() {
         {/* Section 4: Pricing */}
         <section id="pricing" className="pt-8">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <span className="px-3 py-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase tracking-wider inline-block">
+            <span className="landing-badge px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider inline-block">
               Simple Pricing
             </span>
             <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight leading-tight pt-1">
               Affordable plans tailored for every scale
             </h2>
             <p className="text-sm font-semibold text-zinc-400 leading-relaxed max-w-2xl mx-auto">
-              Start free with basic forms, standard templates, and QR codes — upgrade to Pro for advanced analytics, custom branding, and file uploads.
+              {PRICING_COPY.sectionSubtitle}
+            </p>
+            <p className="text-xs font-bold text-violet-400/90 max-w-xl mx-auto">
+              {PRICING_COPY.trialNote}
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 items-stretch max-w-5xl mx-auto pt-4">
             
             {/* Free Plan */}
-            <div className="rounded-2xl border border-white/10 bg-[#070b13]/40 p-8 flex flex-col justify-between hover:border-white/20 transition-all duration-300 relative group">
+            <div className="rounded-2xl border border-white/10 bg-zinc-950/40 p-8 flex flex-col justify-between hover:border-white/20 transition-all duration-300 relative group">
               <div className="space-y-6">
                 <div className="flex justify-between items-start">
                   <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[8px] font-black uppercase tracking-wider text-zinc-400">
@@ -547,37 +560,25 @@ export default async function RootPage() {
                 <div>
                   <h3 className="text-xl font-black text-white">Free Plan</h3>
                   <p className="text-xs text-zinc-400 leading-relaxed font-semibold mt-1">
-                    Ideal for individual creators, freelancers, and small teams testing out visual form building.
+                    {PRICING_COPY.freeDescription}
                   </p>
                 </div>
 
                 <div className="h-[1px] bg-white/5" />
 
-                <ul className="space-y-3.5 text-xs font-bold text-zinc-300">
-                  <li className="flex gap-2.5 items-center">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <span>Up to 5 active forms</span>
-                  </li>
-                  <li className="flex gap-2.5 items-center">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <span>Unlimited submission responses</span>
-                  </li>
-                  <li className="flex gap-2.5 items-center">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <span>Predefined general templates</span>
-                  </li>
-                  <li className="flex gap-2.5 items-center">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <span>SVG QR Code generation</span>
-                  </li>
-                  <li className="flex gap-2.5 items-center text-zinc-500">
-                    <X className="h-4 w-4 text-zinc-600 shrink-0" />
-                    <span className="line-through decoration-zinc-855">Custom logo &amp; brand accents</span>
-                  </li>
-                  <li className="flex gap-2.5 items-center text-zinc-500">
-                    <X className="h-4 w-4 text-zinc-600 shrink-0" />
-                    <span className="line-through decoration-zinc-855">Removes ANSH watermark tags</span>
-                  </li>
+                <ul className="space-y-3 text-xs font-bold">
+                  {FREE_PLAN_INCLUDED.map((feature) => (
+                    <li key={feature} className="flex gap-2.5 items-start text-zinc-300">
+                      <Check className="h-4 w-4 text-violet-400 shrink-0 mt-0.5" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                  {FREE_PLAN_EXCLUDED.map((feature) => (
+                    <li key={feature} className="flex gap-2.5 items-start text-zinc-500">
+                      <X className="h-4 w-4 text-zinc-600 shrink-0 mt-0.5" />
+                      <span className="line-through decoration-zinc-600">{feature}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
 
@@ -589,15 +590,15 @@ export default async function RootPage() {
             </div>
 
             {/* Pro Plan */}
-            <div className="rounded-2xl border-2 border-emerald-500 bg-[#070b13]/80 p-8 flex flex-col justify-between shadow-[0_4px_30px_rgba(16,185,129,0.18)] hover:scale-[1.01] transition-transform duration-300 relative group">
-              <span className="absolute -top-3 left-6 bg-emerald-500 text-slate-950 font-black px-3 py-0.5 rounded-full text-[8px] uppercase tracking-widest flex items-center gap-1 shadow-lg border border-emerald-400">
-                <span className="h-1 w-1 rounded-full bg-slate-950 animate-pulse" />
+            <div className="rounded-2xl border-2 border-violet-500 bg-zinc-950/80 p-8 flex flex-col justify-between shadow-[0_4px_30px_rgba(139,92,246,0.18)] hover:scale-[1.01] transition-transform duration-300 relative group">
+              <span className="absolute -top-3 left-6 landing-btn-primary font-black px-3 py-0.5 rounded-full text-[8px] uppercase tracking-widest flex items-center gap-1 shadow-lg">
+                <span className="h-1 w-1 rounded-full bg-white animate-pulse" />
                 RECOMMENDED
               </span>
 
               <div className="space-y-6">
                 <div className="flex justify-between items-start">
-                  <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[8px] font-black uppercase tracking-wider text-emerald-400">
+                  <span className="px-2 py-0.5 rounded bg-violet-500/10 border border-violet-500/20 text-[8px] font-black uppercase tracking-wider text-violet-400">
                     Best Value
                   </span>
                   <div className="flex items-baseline gap-1 text-right">
@@ -609,47 +610,25 @@ export default async function RootPage() {
                 <div>
                   <h3 className="text-xl font-black text-white">Pro Plan</h3>
                   <p className="text-xs text-zinc-300 leading-relaxed font-semibold mt-1">
-                    Perfect for high-growth teams and enterprises needing custom branding, analytics, and file uploads.
+                    {PRICING_COPY.proDescription}
                   </p>
                 </div>
 
                 <div className="h-[1px] bg-white/5" />
 
-                <ul className="space-y-3.5 text-xs font-bold text-zinc-200">
-                  <li className="flex gap-2.5 items-center">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <span>Unlimited forms building</span>
-                  </li>
-                  <li className="flex gap-2.5 items-center">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <span>Automatic Landing Pages mode</span>
-                  </li>
-                  <li className="flex gap-2.5 items-center">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <span>Cloudflare R2 File Uploads</span>
-                  </li>
-                  <li className="flex gap-2.5 items-center">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <span>Recharts analytics visualizations</span>
-                  </li>
-                  <li className="flex gap-2.5 items-center">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <span>Status Timeline trackers</span>
-                  </li>
-                  <li className="flex gap-2.5 items-center">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <span>Custom logo and brand accents</span>
-                  </li>
-                  <li className="flex gap-2.5 items-center">
-                    <Check className="h-4 w-4 text-emerald-400 shrink-0" />
-                    <span>Removes ANSH watermark tags</span>
-                  </li>
+                <ul className="space-y-3 text-xs font-bold text-zinc-200">
+                  {PRO_PLAN_FEATURES.map((feature) => (
+                    <li key={feature} className="flex gap-2.5 items-start">
+                      <Check className="h-4 w-4 text-violet-400 shrink-0 mt-0.5" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
 
               <div className="pt-8 space-y-4">
-                <p className="text-[10px] text-emerald-400 font-bold select-none text-center">
-                  Yearly billing saves 19%
+                <p className="text-[10px] text-zinc-400 font-bold select-none text-center">
+                  Billed monthly · Secure checkout via Razorpay
                 </p>
               </div>
             </div>
@@ -660,7 +639,7 @@ export default async function RootPage() {
         {/* Section: Why Teams Switch */}
         <section id="why-switch" className="pt-8">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-            <span className="px-3 py-1 rounded-full border border-violet-500/20 bg-violet-500/10 text-violet-400 text-[10px] font-black uppercase tracking-wider inline-block">
+            <span className="landing-badge px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider inline-block">
               Why Teams Switch
             </span>
             <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight leading-tight pt-1">
@@ -673,7 +652,7 @@ export default async function RootPage() {
 
           <div className="grid lg:grid-cols-3 gap-6 mb-8">
             {/* Card 1: Compared to Typeform */}
-            <div className="rounded-2xl border border-white/10 bg-[#070b13]/50 p-6 flex flex-col items-start gap-4 hover:border-violet-500/40 hover:bg-[#070b13]/80 transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_4px_30px_rgba(139,92,246,0.06)] group">
+            <div className="rounded-2xl border border-white/10 bg-zinc-950/50 p-6 flex flex-col items-start gap-4 hover:border-violet-500/40 hover:bg-zinc-950/80 transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_4px_30px_rgba(139,92,246,0.06)] group">
               <div className="h-10 w-10 rounded-xl border border-violet-500/20 bg-violet-500/10 flex items-center justify-center text-violet-400 group-hover:bg-violet-500/20 group-hover:text-violet-300 transition-colors duration-300">
                 <Palette className="h-5 w-5" />
               </div>
@@ -684,11 +663,11 @@ export default async function RootPage() {
                 </p>
                 <ul className="space-y-2.5 pt-2">
                   <li className="flex gap-2 items-start text-[11px] font-semibold text-zinc-400">
-                    <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                    <Check className="h-3.5 w-3.5 text-violet-400 shrink-0 mt-0.5" />
                     <span>Typeform restricts basic features, custom colors, and response volumes behind expensive pricing tiers.</span>
                   </li>
                   <li className="flex gap-2 items-start text-[11px] font-semibold text-zinc-400">
-                    <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                    <Check className="h-3.5 w-3.5 text-violet-400 shrink-0 mt-0.5" />
                     <span>ANSH Forms combines a visual builder, premium brand themes, and analytics under one simple pricing structure.</span>
                   </li>
                 </ul>
@@ -696,7 +675,7 @@ export default async function RootPage() {
             </div>
 
             {/* Card 2: Compared to Google Forms */}
-            <div className="rounded-2xl border border-white/10 bg-[#070b13]/50 p-6 flex flex-col items-start gap-4 hover:border-violet-500/40 hover:bg-[#070b13]/80 transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_4px_30px_rgba(139,92,246,0.06)] group">
+            <div className="rounded-2xl border border-white/10 bg-zinc-950/50 p-6 flex flex-col items-start gap-4 hover:border-violet-500/40 hover:bg-zinc-950/80 transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_4px_30px_rgba(139,92,246,0.06)] group">
               <div className="h-10 w-10 rounded-xl border border-violet-500/20 bg-violet-500/10 flex items-center justify-center text-violet-400 group-hover:bg-violet-500/20 group-hover:text-violet-300 transition-colors duration-300">
                 <Layers className="h-5 w-5" />
               </div>
@@ -707,11 +686,11 @@ export default async function RootPage() {
                 </p>
                 <ul className="space-y-2.5 pt-2">
                   <li className="flex gap-2 items-start text-[11px] font-semibold text-zinc-400">
-                    <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                    <Check className="h-3.5 w-3.5 text-violet-400 shrink-0 mt-0.5" />
                     <span>Google Forms is free but offers highly basic generic layouts that fail to represent your premium corporate identity.</span>
                   </li>
                   <li className="flex gap-2 items-start text-[11px] font-semibold text-zinc-400">
-                    <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                    <Check className="h-3.5 w-3.5 text-violet-400 shrink-0 mt-0.5" />
                     <span>ANSH Forms provides logo styling, customizable headers, and premium background themes to match your corporate styling.</span>
                   </li>
                 </ul>
@@ -719,7 +698,7 @@ export default async function RootPage() {
             </div>
 
             {/* Card 3: Compared to Jotform */}
-            <div className="rounded-2xl border border-white/10 bg-[#070b13]/50 p-6 flex flex-col items-start gap-4 hover:border-violet-500/40 hover:bg-[#070b13]/80 transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_4px_30px_rgba(139,92,246,0.06)] group">
+            <div className="rounded-2xl border border-white/10 bg-zinc-950/50 p-6 flex flex-col items-start gap-4 hover:border-violet-500/40 hover:bg-zinc-950/80 transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_4px_30px_rgba(139,92,246,0.06)] group">
               <div className="h-10 w-10 rounded-xl border border-violet-500/20 bg-violet-500/10 flex items-center justify-center text-violet-400 group-hover:bg-violet-500/20 group-hover:text-violet-300 transition-colors duration-300">
                 <Zap className="h-5 w-5" />
               </div>
@@ -730,11 +709,11 @@ export default async function RootPage() {
                 </p>
                 <ul className="space-y-2.5 pt-2">
                   <li className="flex gap-2 items-start text-[11px] font-semibold text-zinc-400">
-                    <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                    <Check className="h-3.5 w-3.5 text-violet-400 shrink-0 mt-0.5" />
                     <span>Jotform is highly complex but gets expensive quickly, limits file uploads, and suffers from heavy layout loading times.</span>
                   </li>
                   <li className="flex gap-2 items-start text-[11px] font-semibold text-zinc-400">
-                    <Check className="h-3.5 w-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                    <Check className="h-3.5 w-3.5 text-violet-400 shrink-0 mt-0.5" />
                     <span>ANSH Forms integrates high-speed visual building, response analytics, and secure files storage in one unified workspace.</span>
                   </li>
                 </ul>
@@ -744,8 +723,8 @@ export default async function RootPage() {
 
           {/* Model comparisons at the bottom */}
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.02] p-6 space-y-3">
-              <span className="text-[10px] font-black uppercase text-emerald-400 tracking-widest block">THE ANSH FORMS MODEL</span>
+            <div className="rounded-2xl border border-violet-500/20 bg-violet-500/[0.02] p-6 space-y-3">
+              <span className="text-[10px] font-black uppercase text-violet-400 tracking-widest block">THE ANSH FORMS MODEL</span>
               <p className="text-xs font-semibold text-zinc-300 leading-relaxed">
                 A unified, high-performance workspace that any team member can adopt in minutes. Form building, customizable branding, AI templates drafting, and response analytics live together with zero hidden setups or seat license inflation.
               </p>
@@ -789,7 +768,7 @@ export default async function RootPage() {
                 "All response submissions are stored securely and encrypted in transit. You can monitor submission rates, views, and conversion funnel analytics in real-time, and export all responses to standard CSV format at any time."
               ]
             ].map(([q, a], i) => (
-              <details key={i} className="group border border-white/10 bg-[#070b13]/60 rounded-xl overflow-hidden [&_summary::-webkit-details-marker]:hidden">
+              <details key={i} className="group border border-white/10 bg-zinc-950/60 rounded-xl overflow-hidden [&_summary::-webkit-details-marker]:hidden">
                 <summary className="flex items-center justify-between p-5 cursor-pointer select-none text-zinc-205 hover:text-white transition-colors duration-200">
                   <span className="text-sm font-bold tracking-wide pr-4">{q}</span>
                   <ChevronDown className="h-4 w-4 text-zinc-400 group-open:rotate-180 transition-transform duration-300 shrink-0" />
@@ -803,13 +782,14 @@ export default async function RootPage() {
         </section>
 
         {/* CTA banner */}
-        <section id="why-ansh" className="relative rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.02] to-transparent p-10 md:p-16 text-center overflow-hidden">
-          {/* Ambient green glow behind the text */}
-          <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        <section id="why-ansh" className="relative landing-cta-section rounded-3xl border border-white/10 p-10 md:p-16 text-center overflow-hidden">
+          {/* Ambient brand glow behind the text */}
+          <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-80 h-80 bg-[#7000FF]/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 right-1/4 w-56 h-56 bg-[#00C6FF]/10 rounded-full blur-[70px] pointer-events-none" />
           
           <div className="relative z-10 max-w-2xl mx-auto flex flex-col items-center gap-6">
             {/* Icon block */}
-            <div className="h-12 w-12 rounded-xl border border-emerald-500/20 bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+            <div className="h-12 w-12 rounded-xl landing-icon-circle flex items-center justify-center">
               <CheckCircle2 className="h-6 w-6" />
             </div>
 
@@ -823,7 +803,7 @@ export default async function RootPage() {
 
             <Link
               href="/signup"
-              className="px-6 py-3.5 rounded-xl bg-emerald-500 text-slate-950 text-xs font-black uppercase tracking-wider hover:opacity-90 inline-flex items-center gap-2 transition-all duration-200 active:scale-[0.98] shadow-lg shadow-emerald-500/20 mt-2"
+              className="px-6 py-3.5 rounded-xl landing-btn-cta text-xs font-black uppercase tracking-wider hover:opacity-90 inline-flex items-center gap-2 transition-all duration-200 active:scale-[0.98] mt-2"
             >
               Start 14-Day Free Trial <ArrowRight className="h-4 w-4" />
             </Link>
@@ -832,7 +812,7 @@ export default async function RootPage() {
       </div>
 
       {/* ── FOOTER ────────────────────────────────────────────── */}
-      <footer className="relative z-10 border-t border-white/10 bg-[#04070f] pt-16 pb-8">
+      <footer className="relative z-10 border-t border-white/10 bg-zinc-950 pt-16 pb-8">
         <div className="max-w-[1536px] mx-auto px-6 md:px-14 lg:px-20 flex flex-col items-center gap-12">
           
           {/* Handled by & Big title */}
@@ -841,7 +821,7 @@ export default async function RootPage() {
               <span>Handled by</span>
               <Image src="/logoAnshapps.png" alt="ANSH Logo" width={16} height={16} className="h-4 w-4 object-contain opacity-70" />
             </div>
-            <h1 className="text-7xl sm:text-8xl md:text-[10rem] lg:text-[12rem] xl:text-[13.5rem] font-black tracking-tighter bg-gradient-to-r from-sky-400 via-violet-500 to-pink-500 bg-clip-text text-transparent leading-none">
+            <h1 className="text-7xl sm:text-8xl md:text-[10rem] lg:text-[12rem] xl:text-[13.5rem] font-black tracking-tighter landing-brand-gradient leading-none">
               Ansh Apps
             </h1>
           </div>
@@ -892,7 +872,7 @@ export default async function RootPage() {
                   Have questions or need custom business plans? Talk to our creators.
                 </p>
               </div>
-              <a href="mailto:hello@anshapps.com" className="flex items-center gap-2 text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors duration-200">
+              <a href="mailto:hello@anshapps.com" className="flex items-center gap-2 text-xs font-bold text-violet-400 hover:text-violet-300 transition-colors duration-200">
                 <Mail className="h-4 w-4" />
                 <span>hello@anshapps.com</span>
               </a>

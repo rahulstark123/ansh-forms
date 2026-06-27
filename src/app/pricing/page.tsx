@@ -3,10 +3,16 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUIStore } from "@/stores/ui-store";
-import { Check, ShieldCheck, CreditCard } from "lucide-react";
+import { Check, ShieldCheck, CreditCard, X } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { getProPricing } from "@/lib/pricing";
 import { loadRazorpayScript } from "@/lib/razorpay-checkout";
+import {
+  FREE_PLAN_EXCLUDED,
+  FREE_PLAN_INCLUDED,
+  PRO_PLAN_FEATURES,
+  PRICING_COPY,
+} from "@/lib/plan-features";
 
 export default function PricingPage() {
   const router = useRouter();
@@ -109,23 +115,7 @@ export default function PricingPage() {
     }
   };
 
-  const freeFeatures = [
-    "Up to 5 active forms",
-    "Unlimited submission answers",
-    "Predefined templates (General)",
-    "SVG QR Code Generation",
-    "Ansh Forms footer watermarks",
-  ];
-
-  const proFeatures = [
-    "Unlimited forms building",
-    "Automatic Landing Pages mode",
-    "Cloudflare R2 File Uploads",
-    "Recharts analytics visualizations",
-    "Status Timeline trackers",
-    "Custom logo and brand accents",
-    "Removes ANSH watermark tags",
-  ];
+  const proFeatures = [...PRO_PLAN_FEATURES];
 
   return (
     <div className="space-y-8 animate-fadeIn max-w-4xl mx-auto select-none">
@@ -136,10 +126,15 @@ export default function PricingPage() {
         <h1 className="text-2xl md:text-3xl font-black text-slate-800 dark:text-zinc-100 tracking-tight leading-none pt-1">
           Simple plans for every team
         </h1>
-        <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold max-w-sm mx-auto leading-relaxed">
+        <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold max-w-md mx-auto leading-relaxed">
+          {PRICING_COPY.sectionSubtitle}{" "}
           {isIndia
-            ? "India pricing in INR. Secure checkout powered by Razorpay."
-            : "International pricing in USD. Secure checkout powered by Razorpay."}
+            ? "India pricing in INR."
+            : "International pricing in USD."}{" "}
+          Secure checkout powered by Razorpay.
+        </p>
+        <p className="text-[11px] font-bold text-primary max-w-md mx-auto">
+          {PRICING_COPY.trialNote}
         </p>
       </div>
 
@@ -149,7 +144,7 @@ export default function PricingPage() {
           <div>
             <div className="font-black uppercase tracking-wider text-[10px]">Payment successful</div>
             <p className="text-slate-500 mt-1 leading-normal font-bold">
-              Your workspace is now on the Pro plan. All Pro limits are unlocked.
+              Your workspace is now on Pro — you can create unlimited forms.
             </p>
           </div>
         </div>
@@ -172,14 +167,20 @@ export default function PricingPage() {
               <span className="text-xs text-slate-400 font-bold">/ month</span>
             </div>
             <p className="text-xs text-slate-400 leading-normal font-medium">
-              Perfect for schools, events, and local businesses launching simple forms.
+              {PRICING_COPY.freeDescription}
             </p>
             <div className="h-[1px] bg-border/40 my-2" />
-            <ul className="space-y-2.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
-              {freeFeatures.map((feat) => (
-                <li key={feat} className="flex gap-2 items-center">
-                  <Check className="h-4 w-4 text-emerald-500 shrink-0" />
+            <ul className="space-y-2.5 text-xs font-semibold">
+              {FREE_PLAN_INCLUDED.map((feat) => (
+                <li key={feat} className="flex gap-2 items-start text-slate-600 dark:text-slate-300">
+                  <Check className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
                   <span>{feat}</span>
+                </li>
+              ))}
+              {FREE_PLAN_EXCLUDED.map((feat) => (
+                <li key={feat} className="flex gap-2 items-start text-slate-400 dark:text-slate-500">
+                  <X className="h-4 w-4 text-slate-400 dark:text-slate-600 shrink-0 mt-0.5" />
+                  <span className="line-through decoration-slate-400">{feat}</span>
                 </li>
               ))}
             </ul>
@@ -207,13 +208,13 @@ export default function PricingPage() {
               <span className="text-xs text-slate-400 font-bold">/ month</span>
             </div>
             <p className="text-xs text-slate-400 leading-normal font-medium">
-              Unlimited forms, analytics, custom branding, and file uploads for growing teams.
+              {PRICING_COPY.proDescription}
             </p>
             <div className="h-[1px] bg-border/40 my-2" />
             <ul className="space-y-2.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
               {proFeatures.map((feat) => (
-                <li key={feat} className="flex gap-2 items-center">
-                  <Check className="h-4 w-4 text-primary shrink-0" />
+                <li key={feat} className="flex gap-2 items-start">
+                  <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                   <span className="font-bold">{feat}</span>
                 </li>
               ))}

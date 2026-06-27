@@ -7,11 +7,14 @@ import { usePathname } from "next/navigation";
 import { LayoutDashboard, FileText, BarChart3, Settings, CreditCard, Layers, ChevronLeft, ChevronRight, Palette, Sun, Moon, Check, X, LifeBuoy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
+import { useShouldForceSidebarCollapsed } from "@/hooks/use-responsive-shell";
 
 export function MainSidebar() {
   const pathname = usePathname();
   const collapsed = useUIStore((state) => state.sidebarCollapsed);
   const setCollapsed = useUIStore((state) => state.setSidebarCollapsed);
+  const forceCollapsed = useShouldForceSidebarCollapsed();
+  const isCollapsed = collapsed || forceCollapsed;
 
   const theme = useUIStore((state) => state.theme);
   const setTheme = useUIStore((state) => state.setTheme);
@@ -93,7 +96,7 @@ export function MainSidebar() {
   return (
     <aside className={cn(
       "flex h-full flex-col border-r border-border bg-card transition-[width] duration-300 ease-out shadow-sm select-none shrink-0",
-      collapsed ? "w-[72px]" : "w-[240px]"
+      isCollapsed ? "w-[72px]" : "w-[240px]"
     )}>
       {/* Header Logo */}
       <div className="flex h-16 items-center gap-2 px-4 border-b border-border/50">
@@ -107,7 +110,7 @@ export function MainSidebar() {
             priority
           />
         </div>
-        {!collapsed && (
+        {!isCollapsed && (
           <span className="font-extrabold tracking-tight uppercase text-sm text-foreground animate-fadeIn">
             Ansh Forms
           </span>
@@ -135,7 +138,7 @@ export function MainSidebar() {
               )}
             >
               <Icon className="h-5 w-5 shrink-0 transition-transform group-hover:scale-110" />
-              {!collapsed && <span className="animate-fadeIn">{item.label}</span>}
+              {!isCollapsed && <span className="animate-fadeIn">{item.label}</span>}
             </Link>
           );
         })}
@@ -154,20 +157,30 @@ export function MainSidebar() {
           )}
         >
           <Palette className="h-5 w-5 shrink-0" />
-          {!collapsed && <span className="animate-fadeIn">Personalization</span>}
+          {!isCollapsed && <span className="animate-fadeIn">Personalization</span>}
         </button>
 
         {/* Collapse Button */}
         <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="w-full text-left text-xs font-semibold text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-200 dark:hover:bg-slate-800/60 flex gap-2 items-center px-3 py-2.5 cursor-pointer rounded-xl transition-all"
+          onClick={() => {
+            if (forceCollapsed) return;
+            setCollapsed(!collapsed);
+          }}
+          disabled={forceCollapsed}
+          title={forceCollapsed ? "Sidebar stays collapsed on smaller screens" : undefined}
+          className={cn(
+            "w-full text-left text-xs font-semibold flex gap-2 items-center px-3 py-2.5 rounded-xl transition-all",
+            forceCollapsed
+              ? "text-slate-500 cursor-not-allowed opacity-60"
+              : "text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-200 dark:hover:bg-slate-800/60 cursor-pointer"
+          )}
         >
-          {collapsed ? (
+          {isCollapsed ? (
             <ChevronRight className="h-5 w-5 shrink-0" />
           ) : (
             <ChevronLeft className="h-5 w-5 shrink-0" />
           )}
-          {!collapsed && <span className="animate-fadeIn">Collapse Sidebar</span>}
+          {!isCollapsed && <span className="animate-fadeIn">Collapse Sidebar</span>}
         </button>
 
         {/* Right-Hand Personalization Sidebar Drawer */}

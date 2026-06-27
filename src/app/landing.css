@@ -1,0 +1,89 @@
+/* Ansh Apps brand theme — landing page only (imported from page.tsx) */
+
+.landing-page {
+  --brand-cyan: #4dc4ff;
+  --brand-violet: #8b5cf6;
+  --brand-magenta: #e879f9;
+  --brand-purple: #9333ea;
+}
+
+.landing-page ::selection {
+  background: rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+}
+
+.landing-brand-gradient {
+  background: linear-gradient(90deg, #4dc4ff 0%, #8b5cf6 50%, #e879f9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.landing-btn-primary {
+  background: linear-gradient(90deg, #2563eb, #9333ea);
+  color: #fff;
+  box-shadow: 0 10px 25px rgba(147, 51, 234, 0.25);
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
+}
+
+.landing-btn-primary:hover {
+  background: linear-gradient(90deg, #1d4ed8, #7c3aed);
+  opacity: 0.95;
+}
+
+.landing-btn-cta {
+  background: linear-gradient(90deg, #00c6ff, #9333ea);
+  color: #fff;
+  box-shadow: 0 10px 25px rgba(139, 92, 246, 0.25);
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
+}
+
+.landing-btn-cta:hover {
+  background: linear-gradient(90deg, #00b4ea, #7c22d4);
+  opacity: 0.95;
+}
+
+.landing-badge {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+}
+
+.landing-icon-circle {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+}
+
+.landing-glow-cyan {
+  background: rgba(0, 198, 255, 0.05);
+  filter: blur(120px);
+}
+
+.landing-glow-violet {
+  background: rgba(112, 0, 255, 0.05);
+  filter: blur(100px);
+}
+
+.landing-glow-magenta {
+  background: rgba(224, 64, 251, 0.05);
+  filter: blur(130px);
+}
+
+.landing-cta-section {
+  background: linear-gradient(
+    to bottom right,
+    rgba(0, 120, 255, 0.1),
+    rgba(112, 0, 255, 0.1),
+    rgba(224, 64, 251, 0.1)
+  );
+}
+
+.landing-card-surface {
+  background: rgba(9, 9, 11, 0.6);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.landing-card-surface:hover {
+  border-color: rgba(139, 92, 246, 0.3);
+}

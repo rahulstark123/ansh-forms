@@ -332,18 +332,6 @@ export default function DashboardPage() {
             Hi {user?.name || "Rahul"}, welcome back. Here is your forms workspace summary.
           </p>
         </div>
-        
-        {/* Dynamic User Plan Status */}
-        <div className="flex items-center gap-2">
-          <span className={cn(
-            "px-2.5 py-1 rounded-xl text-[9px] font-black uppercase border tracking-wider",
-            user?.pricingPlan === "Pro" 
-              ? "bg-amber-500/10 text-amber-500 border-amber-500/25" 
-              : "bg-slate-500/10 text-slate-500 border-slate-500/20"
-          )}>
-            {user?.pricingPlan || "Free"} Plan
-          </span>
-        </div>
       </div>
 
       {/* Aggregate Stats Cards */}

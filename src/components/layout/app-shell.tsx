@@ -6,7 +6,9 @@ import { MainSidebar } from "./main-sidebar";
 import { SubSidebar } from "./sub-sidebar";
 import { AppHeader } from "./app-header";
 import { SearchModal } from "./search-modal";
+import { MobileBuildingScreen } from "./mobile-building-screen";
 import { useUIStore } from "@/stores/ui-store";
+import { useIsMobileBlocked, useResponsiveSidebar } from "@/hooks/use-responsive-shell";
 import { supabase } from "@/lib/supabase";
 import { isUiOnlyMode } from "@/lib/draft-form";
 
@@ -15,7 +17,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const user = useUIStore((state) => state.user);
   const setUser = useUIStore((state) => state.setUser);
-  
+  const isMobileBlocked = useIsMobileBlocked(pathname);
+
+  useResponsiveSidebar();
+
   const [loading, setLoading] = useState(true);
   const [bannerVisible, setBannerVisible] = useState(true);
 
@@ -152,6 +157,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (pathname === "/") {
     router.push("/dashboard");
     return null;
+  }
+
+  if (isMobileBlocked === true) {
+    return <MobileBuildingScreen />;
+  }
+
+  if (isMobileBlocked === null) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-[#070913] text-zinc-100 flex-col gap-3">
+        <div className="h-10 w-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+        <span className="text-xs font-black tracking-widest uppercase text-slate-500">
+          Loading Workspace
+        </span>
+      </div>
+    );
   }
 
   return (

@@ -699,8 +699,8 @@ export default function FormsPage() {
               <div key={form.id} className="crm-card bg-card border-border p-6.5 hover:translate-y-[-6px] hover:shadow-xl hover:shadow-teal-500/5 hover:border-primary duration-300 flex flex-col justify-between relative group">
                 <div className="space-y-4">
                   {/* Status Bar */}
-                  <div className="flex justify-between items-center select-none">
-                    <div className="flex gap-1.5 items-center">
+                  <div className="flex justify-between items-center select-none gap-2 min-w-0">
+                    <div className="flex gap-1.5 items-center shrink-0">
                       <span className={cn(
                         "px-2.5 py-1 rounded text-[9px] font-black uppercase border tracking-wider",
                         isArchived
@@ -715,7 +715,12 @@ export default function FormsPage() {
                         {form.category || "General"}
                       </span>
                     </div>
-                    <span className="text-xs text-slate-400 dark:text-slate-500 font-mono">/{companySlug || "…"}/{form.slug}</span>
+                    <span
+                      className="text-xs text-slate-400 dark:text-slate-500 font-mono truncate min-w-0 text-right"
+                      title={`/${companySlug || "…"}/${form.slug}`}
+                    >
+                      /{companySlug || "…"}/{form.slug}
+                    </span>
                   </div>
 
                   {/* Title & Desc */}
@@ -790,7 +795,12 @@ export default function FormsPage() {
                       >
                         {form.title}
                       </div>
-                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">/{companySlug || "…"}/{form.slug}</div>
+                      <div
+                        className="text-[10px] text-slate-400 font-mono mt-0.5 truncate max-w-[240px]"
+                        title={`/${companySlug || "…"}/${form.slug}`}
+                      >
+                        /{companySlug || "…"}/{form.slug}
+                      </div>
                     </td>
 
                     {/* Category */}

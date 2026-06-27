@@ -266,7 +266,7 @@ export default function PublicFormPage() {
   // Setup Theme accent data-attribute
   return (
     <div 
-      className="min-h-screen text-slate-900 bg-background flex flex-col transition-all overflow-y-auto"
+      className="light min-h-screen text-slate-900 bg-background flex flex-col transition-all overflow-y-auto"
       data-accent={form.settings.brandColor}
       style={{
         "--primary": 

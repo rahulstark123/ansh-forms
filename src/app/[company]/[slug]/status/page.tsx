@@ -71,7 +71,7 @@ export default function StatusTrackerPage() {
 
   return (
     <div 
-      className="min-h-screen text-slate-900 bg-background flex flex-col justify-center p-6 md:p-12 transition-all overflow-y-auto mesh-gradient"
+      className="light min-h-screen text-slate-900 bg-background flex flex-col justify-center p-6 md:p-12 transition-all overflow-y-auto mesh-gradient"
       style={{
         "--primary": 
           brandColor === "emerald" ? "oklch(0.60 0.16 170)" :

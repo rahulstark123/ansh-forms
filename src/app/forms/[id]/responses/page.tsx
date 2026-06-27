@@ -30,6 +30,7 @@ import {
   ChartTooltip,
   DonutCenter,
 } from "@/components/analytics/chart-ui";
+import { Portal } from "@/components/ui/portal";
 
 const AXIS_TICK = { fontSize: 10, fontWeight: 600, fill: "var(--muted-foreground)" };
 const GRID_STROKE = "var(--border)";
@@ -722,26 +723,30 @@ export default function ResponsesPage() {
 
       {/* SUBMISSION DRAWER DETAIL PANEL */}
       {selectedSubmission && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-xs">
-          <div className="fixed inset-0" onClick={() => !updatingStatus && setSelectedSubmission(null)} />
+        <Portal>
+          <div className="fixed inset-0 z-[200]">
+            <div
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => !updatingStatus && setSelectedSubmission(null)}
+            />
 
-          <div className="w-full max-w-[480px] h-full bg-card border-l border-border relative z-10 shadow-2xl p-6 flex flex-col max-h-screen animate-fadeIn duration-300">
-            {/* Header drawer */}
-            <div className="flex justify-between items-center border-b border-border/40 pb-4 select-none">
-              <div>
-                <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider font-mono">Submission Details</span>
-                <h3 className="text-sm font-black text-slate-800 dark:text-zinc-100">{selectedSubmission.customId}</h3>
+            <div className="absolute inset-y-0 right-0 flex w-full max-w-[480px] flex-col min-h-0 bg-card border-l border-border shadow-2xl animate-fadeIn duration-300">
+              {/* Header drawer */}
+              <div className="flex shrink-0 justify-between items-center border-b border-border/40 px-6 py-4 select-none">
+                <div>
+                  <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider font-mono">Submission Details</span>
+                  <h3 className="text-sm font-black text-slate-800 dark:text-zinc-100">{selectedSubmission.customId}</h3>
+                </div>
+                <button
+                  onClick={() => setSelectedSubmission(null)}
+                  className="h-8 w-8 rounded-lg border border-border/80 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
               </div>
-              <button
-                onClick={() => setSelectedSubmission(null)}
-                className="h-8 w-8 rounded-lg border border-border/80 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
 
-            {/* Content body answers */}
-            <div className="flex-1 overflow-y-auto mt-6 space-y-5 pr-1 text-xs">
+              {/* Content body answers */}
+              <div className="flex-1 min-h-0 overflow-y-auto px-6 py-6 space-y-5 text-xs">
               
               {/* Question list */}
               <div className="space-y-4">
@@ -846,9 +851,10 @@ export default function ResponsesPage() {
               </div>
               )}
 
+              </div>
             </div>
           </div>
-        </div>
+        </Portal>
       )}
     </div>
   );

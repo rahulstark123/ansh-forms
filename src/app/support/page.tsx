@@ -36,6 +36,15 @@ type TicketCategory =
   | "Feature Request"
   | "Bug";
 
+interface SupportReply {
+  id: string;
+  message: string;
+  isAdmin: boolean;
+  authorEmail: string;
+  authorName: string;
+  createdAt: string;
+}
+
 interface SupportTicket {
   id: string;
   ticketId: string;
@@ -48,6 +57,8 @@ interface SupportTicket {
   status: TicketStatus;
   createdAt: string;
   updatedAt: string;
+  replies?: SupportReply[];
+  _count?: { replies: number };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -396,14 +407,86 @@ function CreateTicketModal({
 function TicketDrawer({
   ticket,
   onClose,
+  onUpdated,
 }: {
   ticket: SupportTicket | null;
   onClose: () => void;
+  onUpdated?: () => void;
 }) {
-  if (!ticket) return null;
-  const st = statusConfig(ticket.status);
-  const pr = priorityConfig(ticket.priority);
+  const [detail, setDetail] = useState<SupportTicket | null>(null);
+  const [loadingReplies, setLoadingReplies] = useState(false);
+  const [messageText, setMessageText] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+
+  const loadDetail = useCallback(async (t: SupportTicket) => {
+    setLoadingReplies(true);
+    try {
+      const res = await fetch(`/api/support/${t.id}?email=${encodeURIComponent(t.email)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.ticket) setDetail(data.ticket);
+      }
+    } catch {
+      // keep existing detail
+    } finally {
+      setLoadingReplies(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!ticket) {
+      setDetail(null);
+      setMessageText("");
+      setSendError(null);
+      return;
+    }
+
+    setDetail(ticket);
+    setMessageText("");
+    setSendError(null);
+    loadDetail(ticket);
+  }, [ticket, loadDetail]);
+
+  const handleSendMessage = async () => {
+    if (!detail || !messageText.trim()) return;
+
+    setSending(true);
+    setSendError(null);
+
+    try {
+      const res = await fetch(`/api/support/${detail.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: messageText.trim(),
+          email: detail.email,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setSendError(data.error || "Failed to send message.");
+        return;
+      }
+
+      setMessageText("");
+      await loadDetail(detail);
+      onUpdated?.();
+    } catch {
+      setSendError("Unable to send message. Please try again.");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (!ticket || !detail) return null;
+
+  const st = statusConfig(detail.status);
+  const pr = priorityConfig(detail.priority);
   const StatusIcon = st.icon;
+  const replies = detail.replies ?? [];
+  const canChat = detail.status !== "Closed";
 
   return (
     <>
@@ -411,140 +494,144 @@ function TicketDrawer({
         className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 animate-fadeIn"
         onClick={onClose}
       />
-      <div className="fixed top-0 right-0 h-full w-[420px] bg-card border-l border-border/80 shadow-2xl z-50 flex flex-col animate-slideInRight overflow-hidden">
+      <div className="fixed top-0 right-0 h-full w-[480px] bg-card border-l border-border/80 shadow-2xl z-50 flex flex-col animate-slideInRight overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent">
-          <div>
+        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent">
+          <div className="min-w-0">
             <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-              Ticket Details
+              Support Chat
             </p>
-            <h3 className="text-sm font-black text-foreground mt-0.5">
-              {ticket.ticketId}
+            <h3 className="text-sm font-black text-foreground mt-0.5 truncate">
+              {detail.ticketId} · {detail.subject}
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="h-8 w-8 rounded-xl border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+            className="h-8 w-8 rounded-xl border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer shrink-0"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-5">
-          {/* Status + Priority */}
-          <div className="flex gap-3 flex-wrap">
-            <span
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold",
-                st.classes
-              )}
-            >
-              <StatusIcon className="h-3.5 w-3.5" />
-              {st.label}
-            </span>
-            <span
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold bg-muted/60 border border-border/50",
-                pr.classes
-              )}
-            >
-              <span className={cn("h-2 w-2 rounded-full", pr.dot)} />
-              {pr.label}
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold bg-muted/60 border border-border/50 text-muted-foreground">
-              <Tag className="h-3 w-3" />
-              {ticket.category}
-            </span>
-          </div>
-
-          {/* Subject */}
-          <div className="space-y-1">
-            <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-              Subject
-            </p>
-            <p className="text-sm font-bold text-foreground leading-relaxed">
-              {ticket.subject}
-            </p>
-          </div>
-
-          {/* Description */}
-          {ticket.description && (
-            <div className="space-y-1">
-              <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                Description
-              </p>
-              <p className="text-sm text-muted-foreground leading-relaxed font-semibold whitespace-pre-wrap">
-                {ticket.description}
-              </p>
-            </div>
-          )}
-
-          {/* Requester */}
-          <div className="rounded-xl border border-border/50 bg-muted/30 p-4 space-y-2">
-            <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-              Requester
-            </p>
-            <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black text-sm">
-                {ticket.name.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <p className="text-sm font-bold text-foreground">
-                  {ticket.name}
-                </p>
-                <p className="text-xs text-muted-foreground font-semibold">
-                  {ticket.email}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Timestamps */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl border border-border/50 bg-muted/30 p-3 space-y-0.5">
-              <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                Created
-              </p>
-              <p className="text-xs font-bold text-foreground">
-                {timeAgo(ticket.createdAt)}
-              </p>
-              <p className="text-[10px] text-muted-foreground font-semibold">
-                {new Date(ticket.createdAt).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </p>
-            </div>
-            <div className="rounded-xl border border-border/50 bg-muted/30 p-3 space-y-0.5">
-              <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-                Last Updated
-              </p>
-              <p className="text-xs font-bold text-foreground">
-                {timeAgo(ticket.updatedAt)}
-              </p>
-              <p className="text-[10px] text-muted-foreground font-semibold">
-                {new Date(ticket.updatedAt).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </p>
-            </div>
-          </div>
-
-          {/* Response placeholder */}
-          <div className="rounded-xl border border-dashed border-border/60 p-5 text-center space-y-2">
-            <MessageSquare className="h-6 w-6 text-muted-foreground/50 mx-auto" />
-            <p className="text-xs font-bold text-muted-foreground">
-              Awaiting team response
-            </p>
-            <p className="text-[10px] text-muted-foreground/70 font-semibold">
-              We'll email you once our support team replies to your ticket.
-            </p>
-          </div>
+        {/* Meta strip */}
+        <div className="shrink-0 px-6 py-3 border-b border-border/40 flex flex-wrap gap-2">
+          <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold", st.classes)}>
+            <StatusIcon className="h-3 w-3" />
+            {st.label}
+          </span>
+          <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold bg-muted/60 border border-border/50", pr.classes)}>
+            <span className={cn("h-1.5 w-1.5 rounded-full", pr.dot)} />
+            {pr.label}
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold bg-muted/60 border border-border/50 text-muted-foreground">
+            <Tag className="h-3 w-3" />
+            {detail.category}
+          </span>
         </div>
+
+        {/* Chat thread */}
+        <div className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden p-4 space-y-3 bg-muted/10">
+          {loadingReplies && replies.length === 0 ? (
+            <div className="flex justify-center py-10">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <>
+              {detail.description && (
+                <div className="flex w-full min-w-0 justify-end">
+                  <div className="max-w-[85%] min-w-0 rounded-2xl rounded-br-md border border-border/50 bg-primary/10 px-4 py-3 space-y-1">
+                    <div className="flex items-center justify-between gap-3 min-w-0">
+                      <p className="text-[10px] font-black text-foreground truncate">{detail.name}</p>
+                      <p className="text-[9px] text-muted-foreground font-semibold shrink-0">{timeAgo(detail.createdAt)}</p>
+                    </div>
+                    <p className="text-sm text-foreground font-semibold whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-relaxed">
+                      {detail.description}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {replies.length === 0 && !detail.description && (
+                <div className="rounded-xl border border-dashed border-border/60 p-5 text-center space-y-2">
+                  <MessageSquare className="h-6 w-6 text-muted-foreground/50 mx-auto" />
+                  <p className="text-xs font-bold text-muted-foreground">Start the conversation</p>
+                  <p className="text-[10px] text-muted-foreground/70 font-semibold">
+                    Send a message below and our team will reply here.
+                  </p>
+                </div>
+              )}
+
+              {replies.map((reply) => (
+                <div key={reply.id} className={cn("flex w-full min-w-0", reply.isAdmin ? "justify-start" : "justify-end")}>
+                  <div
+                    className={cn(
+                      "max-w-[85%] min-w-0 rounded-2xl px-4 py-3 space-y-1",
+                      reply.isAdmin
+                        ? "rounded-bl-md border border-primary/25 bg-primary/5"
+                        : "rounded-br-md border border-border/50 bg-primary/10"
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-3 min-w-0">
+                      <p className="text-[10px] font-black text-foreground truncate">
+                        {reply.isAdmin ? reply.authorName || "ANSH Support" : reply.authorName || "You"}
+                      </p>
+                      <p className="text-[9px] text-muted-foreground font-semibold shrink-0">
+                        {timeAgo(reply.createdAt)}
+                      </p>
+                    </div>
+                    <p className="text-sm text-foreground font-semibold whitespace-pre-wrap break-words [overflow-wrap:anywhere] leading-relaxed">
+                      {reply.message}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+
+        {/* Chat composer */}
+        {canChat ? (
+          <div className="shrink-0 border-t border-border/50 bg-card p-4 space-y-2">
+            {sendError && (
+              <p className="text-[10px] font-semibold text-rose-500 bg-rose-500/10 border border-rose-500/20 rounded-lg px-3 py-2">
+                {sendError}
+              </p>
+            )}
+            <div className="flex gap-2">
+              <textarea
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+                placeholder="Type your message..."
+                rows={2}
+                className="flex-1 rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-semibold outline-none focus:border-primary/50 resize-none"
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={sending || !messageText.trim()}
+                className="self-end h-10 w-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center hover:opacity-90 disabled:opacity-50 shrink-0"
+                title="Send message"
+              >
+                {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </button>
+            </div>
+            <p className="text-[9px] text-muted-foreground font-semibold text-center">
+              Press Enter to send · Shift+Enter for new line
+            </p>
+          </div>
+        ) : (
+          <div className="shrink-0 border-t border-border/50 bg-muted/30 p-4 text-center">
+            <p className="text-xs font-bold text-muted-foreground">This ticket is closed</p>
+            <p className="text-[10px] text-muted-foreground/70 font-semibold mt-1">
+              Open a new ticket if you need more help.
+            </p>
+          </div>
+        )}
       </div>
     </>
   );
@@ -927,6 +1014,7 @@ export default function SupportPage() {
       <TicketDrawer
         ticket={selectedTicket}
         onClose={() => setSelectedTicket(null)}
+        onUpdated={() => fetchTickets(true)}
       />
     </div>
   );
