@@ -8,13 +8,16 @@ import {
 
 export async function POST(req: Request) {
   try {
-    const { email, password } = await req.json();
+    const { email, password, passcode, pin } = await req.json();
 
-    if (!email || !password) {
-      return NextResponse.json({ error: "Email and password are required." }, { status: 400 });
+    if (!email || !password || !passcode || !pin) {
+      return NextResponse.json(
+        { error: "Email, password, passcode, and PIN are required." },
+        { status: 400 }
+      );
     }
 
-    if (!verifyAdminCredentials(email, password)) {
+    if (!verifyAdminCredentials(email, password, passcode, pin)) {
       return NextResponse.json({ error: "Invalid admin credentials." }, { status: 401 });
     }
 

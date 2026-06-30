@@ -12,12 +12,24 @@ export function getAdminCredentials() {
   return {
     email: process.env.ADMIN_EMAIL || "forms@anshapps.com",
     password: process.env.ADMIN_PASSWORD || "Rahul@123",
+    passcode: process.env.ADMIN_PASSCODE || "Khushi@Simran",
+    pin: process.env.ADMIN_PIN || "30042026",
   };
 }
 
-export function verifyAdminCredentials(email: string, password: string) {
+export function verifyAdminCredentials(
+  email: string,
+  password: string,
+  passcode: string,
+  pin: string
+) {
   const creds = getAdminCredentials();
-  return email.trim().toLowerCase() === creds.email.toLowerCase() && password === creds.password;
+  return (
+    email.trim().toLowerCase() === creds.email.toLowerCase() &&
+    password === creds.password &&
+    passcode === creds.passcode &&
+    pin === creds.pin
+  );
 }
 
 export function createAdminSessionToken() {
