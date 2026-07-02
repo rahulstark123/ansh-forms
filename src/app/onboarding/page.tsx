@@ -9,6 +9,7 @@ import { ArrowRight, Check, Briefcase, Building, FileText, Globe, AlertTriangle,
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { FORM_TEMPLATES } from "@/config/templates";
+import { MsmeBadge } from "@/components/shared/msme-badge";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -221,8 +222,11 @@ export default function OnboardingPage() {
         </div>
 
         {/* Setup footer text */}
-        <div className="text-[11px] text-zinc-500 font-bold tracking-wide">
-          © {new Date().getFullYear()} ANSH APPS. All rights reserved.
+        <div className="flex flex-col items-start gap-3">
+          <MsmeBadge />
+          <div className="text-[11px] text-zinc-500 font-bold tracking-wide">
+            © {new Date().getFullYear()} ANSH APPS. All rights reserved.
+          </div>
         </div>
       </div>
 

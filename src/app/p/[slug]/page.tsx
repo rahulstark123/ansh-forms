@@ -7,6 +7,7 @@ import { FormFieldInput } from "@/components/forms/form-field-input";
 import { isDisplayOnlyField } from "@/config/form-fields";
 import { uploadFileWithCompression } from "@/lib/upload-file";
 import { compressionSummary } from "@/lib/compress-file";
+import { MsmeBadge } from "@/components/shared/msme-badge";
 
 interface FormField {
   id: string;
@@ -468,9 +469,12 @@ export default function PublicLandingPage() {
                 </a>
               )}
             </div>
-            <p className="text-[10px] text-slate-600 font-bold">
-              © 2026 ANSH Forms. Hosted securely within the ANSH Apps Ecosystem.
-            </p>
+            <div className="flex flex-col items-center gap-3 pt-2">
+              <MsmeBadge />
+              <p className="text-[10px] text-slate-600 font-bold">
+                © 2026 ANSH Forms. Hosted securely within the ANSH Apps Ecosystem.
+              </p>
+            </div>
           </div>
         </footer>
       )}

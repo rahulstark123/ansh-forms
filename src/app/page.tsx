@@ -8,6 +8,8 @@ import {
   PRO_PLAN_FEATURES,
   PRICING_COPY,
 } from "@/lib/plan-features";
+import { MsmeBadge } from "@/components/shared/msme-badge";
+import { TrustCompliance } from "@/components/shared/trust-compliance";
 import "./landing.css";
 
 /* ─── Features grid data ───────────────────────────────── */
@@ -811,6 +813,8 @@ export default async function RootPage() {
         </section>
       </div>
 
+      <TrustCompliance />
+
       {/* ── FOOTER ────────────────────────────────────────────── */}
       <footer className="relative z-10 border-t border-white/10 bg-zinc-950 pt-16 pb-8">
         <div className="max-w-[1536px] mx-auto px-6 md:px-14 lg:px-20 flex flex-col items-center gap-12">
@@ -881,15 +885,18 @@ export default async function RootPage() {
           </div>
 
           {/* Bottom Bar */}
-          <div className="w-full border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="w-full border-t border-white/5 pt-8 flex flex-col gap-5">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <MsmeBadge href="#trust-compliance" />
+              <div className="flex gap-6 text-[10px] font-bold text-zinc-500">
+                <Link href="/privacy" className="hover:text-zinc-300 transition-colors">Privacy Policy</Link>
+                <Link href="/terms" className="hover:text-zinc-300 transition-colors">Terms of Service</Link>
+                <a href="mailto:hello@anshapps.com" className="hover:text-zinc-300 transition-colors">Contact Us</a>
+              </div>
+            </div>
             <span className="text-[10px] font-semibold text-zinc-500 select-none">
               &copy; 2026 ANSH Forms. All rights reserved.
             </span>
-            <div className="flex gap-6 text-[10px] font-bold text-zinc-500">
-              <Link href="/privacy" className="hover:text-zinc-300 transition-colors">Privacy Policy</Link>
-              <Link href="/terms" className="hover:text-zinc-300 transition-colors">Terms of Service</Link>
-              <a href="mailto:hello@anshapps.com" className="hover:text-zinc-300 transition-colors">Contact Us</a>
-            </div>
           </div>
 
         </div>

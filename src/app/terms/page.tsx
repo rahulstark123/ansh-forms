@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, FileText, Mail } from "lucide-react";
 import type { Metadata } from "next";
+import { MsmeBadge } from "@/components/shared/msme-badge";
 
 export const metadata: Metadata = {
   title: "Terms & Conditions | ANSH Forms",
@@ -248,8 +249,11 @@ export default function TermsPage() {
         </div>
         
         {/* Simple Footer */}
-        <div className="text-center text-[10px] text-zinc-600 mt-12 select-none">
-          &copy; 2026 ANSH Forms. Hosted securely within the ANSH Apps Ecosystem.
+        <div className="mt-12 flex flex-col items-center gap-4 select-none">
+          <MsmeBadge />
+          <p className="text-center text-[10px] text-zinc-600">
+            &copy; 2026 ANSH Forms. Hosted securely within the ANSH Apps Ecosystem.
+          </p>
         </div>
 
       </main>
