@@ -13,19 +13,31 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const setTheme = useUIStore((state) => state.setTheme);
   const user = useUIStore((state) => state.user);
 
-  // Load saved theme on mount
+  // The public landing page ("/") owns its own light/dark theme (default light)
+  // scoped to its `.landing-page` wrapper, so the app-wide dark default must not
+  // bleed onto it via <html>.
+  const isLandingRoute = pathname === "/";
+
+  // Load saved theme on mount (skip on the landing route)
   useEffect(() => {
+    if (isLandingRoute) return;
     if (typeof window !== "undefined") {
       const savedTheme = localStorage.getItem("theme") as "light" | "dark";
       if (savedTheme && (savedTheme === "light" || savedTheme === "dark")) {
         setTheme(savedTheme);
       }
     }
-  }, [setTheme]);
+  }, [setTheme, isLandingRoute]);
 
   // Apply active theme class and accent on load/change
   useEffect(() => {
     const root = window.document.documentElement;
+    if (isLandingRoute) {
+      // Keep the document light; the landing page toggles dark on its own wrapper.
+      root.classList.remove("dark");
+      root.classList.add("light");
+      return;
+    }
     root.classList.remove("light", "dark");
     root.classList.add(theme);
     if (user?.accent) {
@@ -33,7 +45,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
     } else {
       root.removeAttribute("data-accent");
     }
-  }, [theme, user?.accent]);
+  }, [theme, user?.accent, isLandingRoute]);
 
   // Public and Auth routes that don't need the dashboard sidebar shell
   const isFormBuilderRoute = /^\/forms\/[^/]+\/edit$/.test(pathname ?? "");
