@@ -12,7 +12,15 @@
   color: #a78bfa;
 }
 
+/* Brand text gradient — vivid in light mode, softer in dark mode */
 .landing-brand-gradient {
+  background: linear-gradient(90deg, #00c6ff 0%, #7000ff 50%, #e040fb 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.dark .landing-brand-gradient {
   background: linear-gradient(90deg, #4dc4ff 0%, #8b5cf6 50%, #e879f9 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -45,29 +53,51 @@
 
 .landing-badge {
   background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  color: #7c3aed;
+}
+
+.dark .landing-badge {
+  background: rgba(59, 130, 246, 0.1);
   border: 1px solid rgba(139, 92, 246, 0.2);
   color: #a78bfa;
 }
 
 .landing-icon-circle {
   background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  color: #7c3aed;
+}
+
+.dark .landing-icon-circle {
+  background: rgba(59, 130, 246, 0.1);
   border: 1px solid rgba(139, 92, 246, 0.2);
   color: #a78bfa;
 }
 
+/* Ambient glow orbs — 10% opacity in light, 5% in dark */
 .landing-glow-cyan {
-  background: rgba(0, 198, 255, 0.05);
+  background: rgba(0, 198, 255, 0.1);
   filter: blur(120px);
+}
+.dark .landing-glow-cyan {
+  background: rgba(0, 198, 255, 0.05);
 }
 
 .landing-glow-violet {
-  background: rgba(112, 0, 255, 0.05);
+  background: rgba(112, 0, 255, 0.1);
   filter: blur(100px);
+}
+.dark .landing-glow-violet {
+  background: rgba(112, 0, 255, 0.05);
 }
 
 .landing-glow-magenta {
-  background: rgba(224, 64, 251, 0.05);
+  background: rgba(224, 64, 251, 0.1);
   filter: blur(130px);
+}
+.dark .landing-glow-magenta {
+  background: rgba(224, 64, 251, 0.05);
 }
 
 .landing-cta-section {
