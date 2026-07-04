@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUIStore } from "@/stores/ui-store";
-import { Check, ShieldCheck, CreditCard, X } from "lucide-react";
+import { Check, ShieldCheck, CreditCard, X, Crown, Sparkles, CalendarClock } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { getProPricing } from "@/lib/pricing";
 import { loadRazorpayScript } from "@/lib/razorpay-checkout";
@@ -38,6 +38,38 @@ export default function PricingPage() {
   }, []);
 
   const pricing = getProPricing(isIndia);
+
+  // ── Current plan + expiry summary ──────────────────────────────
+  const currentPlan = user?.pricingPlan ?? null;
+  const isPro = currentPlan === "Pro";
+  const isTrial = currentPlan === "Free Trial";
+  const trialEnd = user?.trialEndsAt ? new Date(user.trialEndsAt) : null;
+  const trialActive = !!trialEnd && trialEnd.getTime() > Date.now();
+  const trialDaysLeft = trialEnd
+    ? Math.max(0, Math.ceil((trialEnd.getTime() - Date.now()) / 86_400_000))
+    : 0;
+  const trialEndLabel = trialEnd
+    ? trialEnd.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
+    : null;
+
+  const planName = isPro ? "Pro" : isTrial ? "Free Trial" : "Free";
+  const planBadge =
+    isPro
+      ? { text: "Active", cls: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" }
+      : isTrial && trialActive
+        ? { text: "Trial", cls: "bg-amber-500/10 text-amber-500 border-amber-500/20" }
+        : isTrial && !trialActive
+          ? { text: "Expired", cls: "bg-rose-500/10 text-rose-500 border-rose-500/20" }
+          : { text: "Active", cls: "bg-slate-500/10 text-slate-500 border-slate-400/25" };
+  const expiryLabel = isPro ? "Renewal" : isTrial ? "Trial ends" : "Validity";
+  const expiryValue = isPro
+    ? "Renews monthly"
+    : isTrial
+      ? trialActive
+        ? `${trialEndLabel} · ${trialDaysLeft} day${trialDaysLeft === 1 ? "" : "s"} left`
+        : "Trial expired"
+      : "No expiry — free forever";
+  const expiryIsAlert = isTrial && !trialActive;
 
   const handleUpgrade = async () => {
     if (!user) {
@@ -137,6 +169,45 @@ export default function PricingPage() {
           {PRICING_COPY.trialNote}
         </p>
       </div>
+
+      {user && (
+        <div className="crm-card bg-card border-border/85 p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-left">
+          <div className="flex items-center gap-3.5">
+            <div className="h-11 w-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+              {isPro ? (
+                <Crown className="h-5 w-5 text-primary" />
+              ) : (
+                <Sparkles className="h-5 w-5 text-primary" />
+              )}
+            </div>
+            <div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                Current Plan
+              </span>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-base font-black text-slate-800 dark:text-zinc-100 leading-none">
+                  {planName}
+                </span>
+                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${planBadge.cls}`}>
+                  {planBadge.text}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 sm:justify-end">
+            <CalendarClock className={`h-5 w-5 shrink-0 ${expiryIsAlert ? "text-rose-500" : "text-slate-400"}`} />
+            <div className="sm:text-right">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                {expiryLabel}
+              </span>
+              <span className={`text-sm font-bold leading-none ${expiryIsAlert ? "text-rose-500" : "text-slate-700 dark:text-zinc-200"}`}>
+                {expiryValue}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {success && (
         <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-600 flex gap-2.5 items-start animate-fadeInDown">

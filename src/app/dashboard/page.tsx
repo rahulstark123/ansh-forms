@@ -426,10 +426,10 @@ export default function DashboardPage() {
         {/* Recent Responses Container */}
         <div className="lg:col-span-2 space-y-3">
           <div className="flex justify-between items-center select-none">
-            <h2 className="text-xs font-black text-slate-800 dark:text-zinc-200 uppercase tracking-widest">
+            <h2 className="text-sm font-black text-slate-800 dark:text-zinc-200 uppercase tracking-widest">
               Recent Responses
             </h2>
-            <span className="text-[10px] font-bold text-slate-400">
+            <span className="text-xs font-bold text-slate-400">
               Latest incoming answers
             </span>
           </div>
@@ -449,14 +449,14 @@ export default function DashboardPage() {
               <div className="overflow-x-auto flex-1">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-border/30 text-[9px] font-black uppercase tracking-wider text-slate-400 bg-slate-50/20 dark:bg-slate-900/10 select-none">
-                      <th className="px-5 py-3">Form Name & Ref ID</th>
-                      <th className="px-5 py-3">Submission Details</th>
-                      <th className="px-5 py-3">Status</th>
-                      <th className="px-5 py-3 text-right">Actions</th>
+                    <tr className="border-b border-border/30 text-[11px] font-black uppercase tracking-wider text-slate-400 bg-slate-50/20 dark:bg-slate-900/10 select-none">
+                      <th className="px-5 py-4">Form Name & Ref ID</th>
+                      <th className="px-5 py-4">Submission Details</th>
+                      <th className="px-5 py-4">Status</th>
+                      <th className="px-5 py-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border/20 text-[11px] font-semibold text-slate-700 dark:text-zinc-300">
+                  <tbody className="divide-y divide-border/20 text-sm font-semibold text-slate-700 dark:text-zinc-300">
                     {recentResponses.map((res) => {
                       const date = new Date(res.createdAt).toLocaleDateString("en-IN", {
                         day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit"
@@ -471,26 +471,26 @@ export default function DashboardPage() {
 
                       return (
                         <tr key={res.id} className="hover:bg-slate-50/30 dark:hover:bg-slate-900/10 transition-colors">
-                          <td className="px-5 py-3.5">
-                            <div className="font-bold text-slate-800 dark:text-zinc-100 truncate max-w-[150px]">
+                          <td className="px-5 py-4">
+                            <div className="text-sm font-bold text-slate-800 dark:text-zinc-100 truncate max-w-[200px]">
                               {res.form?.title || "Unknown Form"}
                             </div>
-                            <div className="text-[9px] text-slate-400 font-mono mt-0.5">
+                            <div className="text-[11px] text-slate-400 font-mono mt-0.5">
                               {res.customId}
                             </div>
                           </td>
-                          <td className="px-5 py-3.5">
-                            <div className="text-[10px] text-slate-500 dark:text-zinc-400 truncate max-w-[200px]" title={previewStr}>
+                          <td className="px-5 py-4">
+                            <div className="text-xs text-slate-500 dark:text-zinc-400 truncate max-w-[260px]" title={previewStr}>
                               {previewStr || "No details submitted."}
                             </div>
-                            <div className="text-[8px] text-slate-400 font-bold mt-1 flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
+                            <div className="text-[10px] text-slate-400 font-bold mt-1 flex items-center gap-1">
+                              <Clock className="h-3.5 w-3.5" />
                               <span>{date}</span>
                             </div>
                           </td>
-                          <td className="px-5 py-3.5 select-none">
+                          <td className="px-5 py-4 select-none">
                             <span className={cn(
-                              "px-2 py-0.5 rounded-full text-[8px] font-extrabold uppercase border",
+                              "px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase border",
                               res.status === "Approved" && "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
                               res.status === "Rejected" && "bg-rose-500/10 text-rose-500 border-rose-500/20",
                               res.status === "Under Review" && "bg-amber-500/10 text-amber-500 border-amber-500/20",
@@ -499,10 +499,10 @@ export default function DashboardPage() {
                               {res.status}
                             </span>
                           </td>
-                          <td className="px-5 py-3.5 text-right select-none">
+                          <td className="px-5 py-4 text-right select-none">
                             <button
                               onClick={() => router.push(`/forms/${res.form.id}/responses`)}
-                              className="text-primary hover:underline font-black text-[9px] uppercase tracking-wider cursor-pointer"
+                              className="text-primary hover:underline font-black text-[11px] uppercase tracking-wider cursor-pointer"
                             >
                               Details
                             </button>
@@ -520,15 +520,15 @@ export default function DashboardPage() {
         {/* Top Performing Forms Container */}
         <div className="space-y-3">
           <div className="flex justify-between items-center select-none">
-            <h2 className="text-xs font-black text-slate-800 dark:text-zinc-200 uppercase tracking-widest">
+            <h2 className="text-sm font-black text-slate-800 dark:text-zinc-200 uppercase tracking-widest">
               Top Performing Forms
             </h2>
-            <span className="text-[10px] font-bold text-slate-400">
+            <span className="text-xs font-bold text-slate-400">
               By conversion rate
             </span>
           </div>
 
-          <div className="crm-card bg-card border-border p-5 space-y-4 min-h-[300px] flex flex-col justify-between">
+          <div className="crm-card bg-card border-border p-6 space-y-4 min-h-[300px] flex flex-col justify-between">
             {loading ? (
               <TopFormsSkeleton rows={5} />
             ) : topPerformingForms.length === 0 ? (
@@ -540,32 +540,32 @@ export default function DashboardPage() {
                 </p>
               </div>
             ) : (
-              <div className="space-y-3.5 flex-1">
+              <div className="space-y-4 flex-1">
                 {topPerformingForms.map((item, idx) => (
-                  <div key={item.id} className="flex items-center justify-between gap-4 border-b border-border/40 pb-3 last:border-0 last:pb-0">
-                    <div className="space-y-0.5 text-left max-w-[140px]">
-                      <div className="text-xs font-black text-slate-800 dark:text-zinc-100 truncate">
+                  <div key={item.id} className="flex items-center justify-between gap-4 border-b border-border/40 pb-3.5 last:border-0 last:pb-0">
+                    <div className="space-y-0.5 text-left max-w-[150px]">
+                      <div className="text-sm font-black text-slate-800 dark:text-zinc-100 truncate">
                         {item.title}
                       </div>
-                      <div className="text-[9px] text-slate-400 font-mono truncate">
+                      <div className="text-[11px] text-slate-400 font-mono truncate">
                         /{companySlug || "…"}/{item.slug}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4 select-none">
+                    <div className="flex items-center gap-5 select-none">
                       <div className="text-right">
-                        <span className="text-[10px] font-black text-slate-800 dark:text-zinc-200 block font-mono">
+                        <span className="text-sm font-black text-slate-800 dark:text-zinc-200 block font-mono">
                           {item.submissions}
                         </span>
-                        <span className="text-[8px] text-slate-400 font-semibold block">
+                        <span className="text-[10px] text-slate-400 font-semibold block">
                           Responses
                         </span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[10px] font-black text-emerald-500 block font-mono">
+                        <span className="text-sm font-black text-emerald-500 block font-mono">
                           {item.rate.toFixed(1)}%
                         </span>
-                        <span className="text-[8px] text-slate-400 font-semibold block">
+                        <span className="text-[10px] text-slate-400 font-semibold block">
                           Conversion
                         </span>
                       </div>
@@ -577,10 +577,10 @@ export default function DashboardPage() {
 
             <button
               onClick={() => router.push("/analytics")}
-              className="w-full text-center border border-border/80 hover:border-primary/55 rounded-xl py-2.5 text-[9px] font-black uppercase tracking-wider text-slate-500 hover:text-primary transition-all cursor-pointer mt-4 flex items-center justify-center gap-1 select-none"
+              className="w-full text-center border border-border/80 hover:border-primary/55 rounded-xl py-3 text-[11px] font-black uppercase tracking-wider text-slate-500 hover:text-primary transition-all cursor-pointer mt-4 flex items-center justify-center gap-1.5 select-none"
             >
               <span>View Full Analytics Register</span>
-              <ArrowRight className="h-3 w-3" />
+              <ArrowRight className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>

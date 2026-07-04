@@ -93,12 +93,12 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
 
   /* ── Company / Workspace states ── */
-  const [companyName, setCompanyName] = useState("Ansh Apps Corp");
+  const [companyName, setCompanyName] = useState("");
   const [companySlug, setCompanySlug] = useState("");
   const [savingCompany, setSavingCompany] = useState(false);
-  const [taxId, setTaxId] = useState("TAX-89304-IN");
-  const [corporateEmail, setCorporateEmail] = useState("admin@anshapps.com");
-  const [address, setAddress] = useState("120 Venture Boulevard, Tech City, IN");
+  const [taxId, setTaxId] = useState("");
+  const [corporateEmail, setCorporateEmail] = useState("");
+  const [address, setAddress] = useState("");
   const [timezone, setTimezone] = useState("UTC+05:30 (IST)");
   const [language, setLanguage] = useState("English (US)");
 
@@ -146,13 +146,12 @@ export default function SettingsPage() {
       .catch(console.error);
   }, [activeTab]);
 
-  /* Load localStorage for company tab extras */
+  /* Load localStorage for company tab extras (company name comes from the workspace API) */
   useEffect(() => {
     if (typeof window === "undefined") return;
-    setCompanyName(localStorage.getItem("company_name") || "Ansh Apps Corp");
-    setTaxId(localStorage.getItem("company_tax_id") || "TAX-89304-IN");
-    setCorporateEmail(localStorage.getItem("company_email") || "admin@anshapps.com");
-    setAddress(localStorage.getItem("company_address") || "120 Venture Boulevard, Tech City, IN");
+    setTaxId(localStorage.getItem("company_tax_id") || "");
+    setCorporateEmail(localStorage.getItem("company_email") || "");
+    setAddress(localStorage.getItem("company_address") || "");
     setTimezone(localStorage.getItem("company_timezone") || "UTC+05:30 (IST)");
     setLanguage(localStorage.getItem("company_language") || "English (US)");
   }, []);
@@ -662,7 +661,7 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="text-[9px] font-black uppercase text-slate-400 block mb-1">Company Name</label>
-                <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className="premium-input text-xs font-bold" required />
+                <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Your company or workspace name" className="premium-input text-xs font-bold" required />
                 {companySlug && (
                   <p className="text-[10px] text-slate-400 font-mono mt-1.5">
                     Public form URLs: <span className="text-slate-600 dark:text-zinc-300">/{companySlug}/your-form-slug</span>
@@ -671,16 +670,16 @@ export default function SettingsPage() {
               </div>
               <div>
                 <label className="text-[9px] font-black uppercase text-slate-400 block mb-1">Corporate Tax ID</label>
-                <input type="text" value={taxId} onChange={(e) => setTaxId(e.target.value)} className="premium-input text-xs font-bold" />
+                <input type="text" value={taxId} onChange={(e) => setTaxId(e.target.value)} placeholder="e.g. TAX-00000-IN" className="premium-input text-xs font-bold" />
               </div>
             </div>
             <div>
               <label className="text-[9px] font-black uppercase text-slate-400 block mb-1">Corporate Email Address</label>
-              <input type="email" value={corporateEmail} onChange={(e) => setCorporateEmail(e.target.value)} className="premium-input text-xs font-bold" required />
+              <input type="email" value={corporateEmail} onChange={(e) => setCorporateEmail(e.target.value)} placeholder="admin@yourcompany.com" className="premium-input text-xs font-bold" required />
             </div>
             <div>
               <label className="text-[9px] font-black uppercase text-slate-400 block mb-1">Physical HQ Address</label>
-              <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} className="premium-input text-xs font-bold" required />
+              <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street, city, country" className="premium-input text-xs font-bold" required />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
               <div>
