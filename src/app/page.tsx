@@ -904,7 +904,7 @@ export default async function RootPage() {
                     href="https://www.facebook.com/anshapps"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-zinc-400 hover:text-[#1877F2] dark:text-zinc-500 dark:hover:text-[#1877F2] transition-colors duration-200"
+                    className="text-[#1877F2] hover:opacity-80 transition-opacity duration-200"
                     aria-label="Facebook"
                   >
                     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -915,7 +915,7 @@ export default async function RootPage() {
                     href="https://www.instagram.com/anshapps?igsh=d2hwZHVmMWQ3cjJ1"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-zinc-400 hover:text-[#E1306C] dark:text-zinc-500 dark:hover:text-[#E1306C] transition-colors duration-200"
+                    className="text-[#E1306C] hover:opacity-80 transition-opacity duration-200"
                     aria-label="Instagram"
                   >
                     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -928,7 +928,7 @@ export default async function RootPage() {
                     href="https://www.youtube.com/channel/UC87q1S2bTuzpj-VwFM6l6fw"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-zinc-400 hover:text-[#FF0000] dark:text-zinc-500 dark:hover:text-[#FF0000] transition-colors duration-200"
+                    className="text-[#FF0000] hover:opacity-80 transition-opacity duration-200"
                     aria-label="YouTube"
                   >
                     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
