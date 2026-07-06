@@ -899,6 +899,43 @@ export default async function RootPage() {
                 <p className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-xs">
                   The ultimate form builder canvas designed for teams who construct templates, customize brand layouts, and analyze response submissions daily.
                 </p>
+                <div className="flex items-center gap-4 pt-2">
+                  <a
+                    href="https://www.facebook.com/anshapps"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-zinc-400 hover:text-[#1877F2] dark:text-zinc-500 dark:hover:text-[#1877F2] transition-colors duration-200"
+                    aria-label="Facebook"
+                  >
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.93 8-4.96 8-9.75z"/>
+                    </svg>
+                  </a>
+                  <a
+                    href="https://www.instagram.com/anshapps?igsh=d2hwZHVmMWQ3cjJ1"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-zinc-400 hover:text-[#E1306C] dark:text-zinc-500 dark:hover:text-[#E1306C] transition-colors duration-200"
+                    aria-label="Instagram"
+                  >
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                  </a>
+                  <a
+                    href="https://www.youtube.com/channel/UC87q1S2bTuzpj-VwFM6l6fw"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-zinc-400 hover:text-[#FF0000] dark:text-zinc-500 dark:hover:text-[#FF0000] transition-colors duration-200"
+                    aria-label="YouTube"
+                  >
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.108C19.524 3.545 12 3.545 12 3.545s-7.525 0-9.387.51a3.003 3.003 0 0 0-2.11 2.108C0 8.024 0 12 0 12s0 3.976.503 5.837a3.003 3.003 0 0 0 2.11 2.108c1.862.51 9.387.51 9.387.51s7.525 0 9.387-.51a3.003 3.003 0 0 0 2.11-2.108C24 15.976 24 12 24 12s0-3.976-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                  </a>
+                </div>
               </div>
 
               {/* Product Col */}
