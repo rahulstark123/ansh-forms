@@ -1,13 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Shield } from "lucide-react";
-import type { Metadata } from "next";
+import { buildSiteMetadata } from "@/lib/seo";
 import { MsmeBadge } from "@/components/shared/msme-badge";
 
-export const metadata: Metadata = {
-  title: "Privacy Policy | ANSH Forms",
+export const metadata = buildSiteMetadata({
+  title: "Privacy Policy",
   description: "Privacy Policy for ANSH Forms — how we collect, use, and protect your form and submission data.",
-};
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (

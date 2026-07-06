@@ -1,3 +1,10 @@
+import { buildSiteMetadata } from "@/lib/seo";
+
+export const metadata = buildSiteMetadata({
+  title: "Admin Panel",
+  noIndex: true,
+});
+
 export default function AdminPanelLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">

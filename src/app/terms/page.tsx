@@ -1,13 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, FileText, Mail } from "lucide-react";
-import type { Metadata } from "next";
+import { buildSiteMetadata } from "@/lib/seo";
 import { MsmeBadge } from "@/components/shared/msme-badge";
 
-export const metadata: Metadata = {
-  title: "Terms & Conditions | ANSH Forms",
+export const metadata = buildSiteMetadata({
+  title: "Terms & Conditions",
   description: "Terms and Conditions governing the use of ANSH Forms.",
-};
+  path: "/terms",
+});
 
 export default function TermsPage() {
   return (

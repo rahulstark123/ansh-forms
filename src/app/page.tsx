@@ -11,6 +11,9 @@ import {
 import { MsmeBadge } from "@/components/shared/msme-badge";
 import { TrustCompliance } from "@/components/shared/trust-compliance";
 import { LandingThemeToggle } from "@/components/landing/theme-toggle";
+import { buildWebSiteNameJsonLd, buildLandingJsonLd } from "@/lib/seo";
+import LandingSeoContent from "@/components/landing/LandingSeoContent";
+import { BharatTagline } from "@/components/shared/bharat-tagline";
 import "./landing.css";
 
 /** Full-width shell with modern responsive side gutters (not edge-to-edge). */
@@ -266,6 +269,19 @@ export default async function RootPage() {
       className="landing-page relative min-h-screen overflow-x-hidden bg-zinc-50 text-zinc-900"
       suppressHydrationWarning
     >
+      {/* Dynamic JSON-LD Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildWebSiteNameJsonLd()) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildLandingJsonLd()) }}
+      />
+
+      {/* Crawlable fallback content for search engines */}
+      <LandingSeoContent />
+
       {/* Boot script applies saved theme to this wrapper before paint (no flash) */}
       <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
 
@@ -312,9 +328,9 @@ export default async function RootPage() {
                   Built for High-Growth Teams &amp; Enterprises
                 </span>
                 <h1 className="text-4xl md:text-5xl xl:text-6xl font-black tracking-tight leading-[1.05] text-zinc-900 dark:text-zinc-100">
-                  Run your complete
+                  ANSH Forms &mdash;
                   <span className="block landing-brand-gradient">
-                    Forms &amp; Response Ops
+                    Run your complete Forms &amp; Response Ops
                   </span>
                   in one simple workspace
                 </h1>
@@ -868,6 +884,7 @@ export default async function RootPage() {
               <h1 className="text-7xl sm:text-8xl md:text-[10rem] lg:text-[12rem] xl:text-[13.5rem] font-black tracking-tighter landing-brand-gradient leading-none">
                 Ansh Apps
               </h1>
+              <BharatTagline />
             </div>
 
             {/* Links Grid */}
