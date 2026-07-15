@@ -4,10 +4,77 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, BarChart3, Settings, CreditCard, Layers, ChevronLeft, ChevronRight, Palette, Sun, Moon, Check, X, LifeBuoy } from "lucide-react";
+import { LayoutDashboard, FileText, BarChart3, Settings, CreditCard, Layers, ChevronLeft, ChevronRight, Palette, Sun, Moon, Check, X, LifeBuoy, LayoutGrid, ExternalLink, ChevronUp, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/stores/ui-store";
 import { useShouldForceSidebarCollapsed } from "@/hooks/use-responsive-shell";
+
+const ECOSYSTEM_APPS = [
+  {
+    name: "ANSH Booking",
+    tagline: "Meeting room & resource booking",
+    status: "SOON",
+    badgeClass: "bg-rose-500/10 text-rose-500 border-rose-500/20 dark:bg-rose-500/5",
+    dotClass: "bg-rose-500",
+    href: "https://booking.anshapps.com",
+    isLive: false,
+  },
+  {
+    name: "ANSH Visitor",
+    tagline: "Smart lobby & guest management",
+    status: "LIVE",
+    badgeClass: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20 dark:bg-indigo-500/5",
+    dotClass: "bg-indigo-500",
+    href: "https://visitor.anshapps.com",
+    isLive: true,
+  },
+  {
+    name: "ANSH Tasks",
+    tagline: "Team task & project tracker",
+    status: "LIVE",
+    badgeClass: "bg-sky-500/10 text-sky-500 border-sky-500/20 dark:bg-sky-500/5",
+    dotClass: "bg-sky-500",
+    href: "https://tasks.anshapps.com",
+    isLive: true,
+  },
+  {
+    name: "ANSH HR",
+    tagline: "Human resource management",
+    status: "LIVE",
+    badgeClass: "bg-purple-500/10 text-purple-500 border-purple-500/20 dark:bg-purple-500/5",
+    dotClass: "bg-purple-500",
+    href: "https://hr.anshapps.com",
+    isLive: true,
+  },
+  {
+    name: "ANSH Expense",
+    tagline: "Expense & spend operations",
+    status: "LIVE",
+    badgeClass: "bg-amber-500/10 text-amber-500 border-amber-500/20 dark:bg-amber-500/5",
+    dotClass: "bg-amber-500",
+    href: "https://expense.anshapps.com",
+    isLive: true,
+  },
+  {
+    name: "ANSH Forms",
+    tagline: "Smart form builder",
+    status: "HERE",
+    badgeClass: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20 dark:bg-emerald-500/5",
+    dotClass: "bg-emerald-500",
+    href: "#",
+    isLive: true,
+    isCurrent: true,
+  },
+  {
+    name: "ANSH Links",
+    tagline: "Link-in-bio profile builder",
+    status: "LIVE",
+    badgeClass: "bg-pink-500/10 text-pink-500 border-pink-500/20 dark:bg-pink-500/5",
+    dotClass: "bg-pink-500",
+    href: "https://links.anshapps.com",
+    isLive: true,
+  },
+];
 
 export function MainSidebar() {
   const pathname = usePathname();
@@ -22,6 +89,7 @@ export function MainSidebar() {
   const setUser = useUIStore((state) => state.setUser);
 
   const [showThemePanel, setShowThemePanel] = useState(false);
+  const [showAppsMenu, setShowAppsMenu] = useState(false);
 
   const navigation = [
     { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -146,9 +214,116 @@ export function MainSidebar() {
 
       {/* Footer Controls */}
       <div className="p-3 border-t border-border/50 relative">
+        {/* ANSH Apps Popover Menu */}
+        {showAppsMenu && (
+          <>
+            <div 
+              onClick={() => setShowAppsMenu(false)}
+              className="fixed inset-0 z-40 cursor-default"
+            />
+            <div className="absolute bottom-[calc(100%+8px)] left-3 w-[295px] z-50 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-[#0c0f1d] p-4 shadow-xl select-none animate-fadeIn flex flex-col gap-3">
+              <div className="px-1">
+                <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-450 dark:text-zinc-500">
+                  ANSH ECOSYSTEM
+                </h4>
+                <p className="text-[11px] font-bold text-slate-500 dark:text-zinc-450 mt-0.5">
+                  Jump to your other ANSH apps
+                </p>
+              </div>
+
+              <div className="h-[1px] bg-slate-100 dark:bg-zinc-800/60" />
+
+              <div className="max-h-[300px] overflow-y-auto pr-1 space-y-1 scrollbar-thin">
+                {ECOSYSTEM_APPS.map((app) => {
+                  const isClickable = !app.isCurrent && app.status !== "SOON";
+                  const content = (
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-3">
+                        <span className={cn("h-2.5 w-2.5 rounded-full shrink-0", app.dotClass)} />
+                        <div className="text-left">
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
+                              {app.name}
+                            </span>
+                            {isClickable && (
+                              <ExternalLink className="h-3 w-3 text-slate-400 dark:text-zinc-550 shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-[10px] text-slate-400 dark:text-zinc-500 leading-tight mt-0.5 max-w-[150px] truncate font-medium">
+                            {app.tagline}
+                          </p>
+                        </div>
+                      </div>
+                      <span className={cn(
+                        "text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded border shrink-0", 
+                        app.badgeClass
+                      )}>
+                        {app.status}
+                      </span>
+                    </div>
+                  );
+
+                  if (isClickable && app.href) {
+                    return (
+                      <a
+                        key={app.name}
+                        href={app.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center p-2 rounded-xl border border-transparent hover:bg-slate-50 dark:hover:bg-slate-800/40 cursor-pointer transition-all duration-200"
+                      >
+                        {content}
+                      </a>
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={app.name}
+                      className={cn(
+                        "flex items-center p-2 rounded-xl border transition-all duration-200",
+                        app.isCurrent
+                          ? "bg-emerald-500/5 dark:bg-emerald-500/10 border-emerald-500/20"
+                          : "border-transparent opacity-50 cursor-not-allowed"
+                      )}
+                    >
+                      {content}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ANSH Apps Button */}
+        <button
+          onClick={() => {
+            setShowAppsMenu(!showAppsMenu);
+            setShowThemePanel(false);
+          }}
+          className={cn(
+            "w-full text-left text-xs font-semibold flex justify-between items-center px-3 py-2.5 cursor-pointer mb-1.5 rounded-xl transition-all",
+            showAppsMenu 
+              ? "bg-primary/10 text-primary font-bold" 
+              : "text-slate-455 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:text-slate-205 dark:hover:text-slate-200 dark:hover:bg-slate-800/60"
+          )}
+        >
+          <div className="flex gap-2 items-center">
+            <LayoutGrid className="h-5 w-5 shrink-0" />
+            {!isCollapsed && <span className="animate-fadeIn">ANSH Apps</span>}
+          </div>
+          {!isCollapsed && (
+            showAppsMenu ? <ChevronDown className="h-4 w-4 text-slate-450 dark:text-slate-500 shrink-0" /> : <ChevronUp className="h-4 w-4 text-slate-450 dark:text-slate-500 shrink-0" />
+          )}
+        </button>
+
         {/* Personalization Button */}
         <button
-          onClick={() => setShowThemePanel(!showThemePanel)}
+          onClick={() => {
+            setShowThemePanel(!showThemePanel);
+            setShowAppsMenu(false);
+          }}
           className={cn(
             "w-full text-left text-xs font-semibold flex gap-2 items-center px-3 py-2.5 cursor-pointer mb-1.5 rounded-xl transition-all",
             showThemePanel 

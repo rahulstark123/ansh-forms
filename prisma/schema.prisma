@@ -12,6 +12,7 @@ model Workspace {
   name           String
   slug           String?   @unique
   formCategories Json      @default("[]")
+  saathicode     String?   // Optional field for ANSH Saathi Code
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   profiles       Profile[]

@@ -10,7 +10,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
     }
 
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = await req.json();
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, saathicode } = await req.json();
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
       return NextResponse.json({ error: "Invalid payment response." }, { status: 400 });
@@ -30,9 +30,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Payment verification failed." }, { status: 400 });
     }
 
+    if (saathicode) {
+      await db.workspace.update({
+        where: { wid: profile.wid },
+        data: { saathicode },
+      });
+    }
+
+    // Determine the new subscription end date (trialEndsAt)
+    let newTrialEndsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    if (profile.pricingPlan === "Pro" && profile.trialEndsAt) {
+      const currentEnd = new Date(profile.trialEndsAt);
+      if (currentEnd > new Date()) {
+        newTrialEndsAt = new Date(currentEnd.getTime() + 30 * 24 * 60 * 60 * 1000);
+      }
+    }
+
     const updated = await db.profile.update({
       where: { id: profile.id },
-      data: { pricingPlan: "Pro" },
+      data: { 
+        pricingPlan: "Pro",
+        trialEndsAt: newTrialEndsAt,
+      },
     });
 
     return NextResponse.json({
@@ -40,6 +59,7 @@ export async function POST(req: Request) {
       profile: {
         id: updated.id,
         pricingPlan: updated.pricingPlan,
+        trialEndsAt: updated.trialEndsAt,
       },
     });
   } catch (error: unknown) {

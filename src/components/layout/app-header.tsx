@@ -109,6 +109,20 @@ export function AppHeader() {
 
       {/* Right Controls */}
       <div className="flex items-center gap-4">
+        {/* ANSH Saathi Tri-color Button */}
+        {user && (
+          <a
+            href="https://saathi.anshapps.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="relative inline-flex items-center justify-center p-[1.5px] rounded-full overflow-hidden bg-gradient-to-r from-[#FF9933] via-slate-200 dark:via-zinc-700 to-[#128807] transition-all hover:scale-105 duration-200 shadow-sm"
+          >
+            <span className="px-4.5 py-1 rounded-full bg-white dark:bg-[#0c0f1d] text-xs font-black text-[#09357a] dark:text-[#5c85d6] transition-colors">
+              ANSH Saathi
+            </span>
+          </a>
+        )}
+
         {/* Pro / Free Plan Badge */}
         {user && (
           <span

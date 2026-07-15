@@ -10,5 +10,10 @@ export function getProPricing(isIndia: boolean) {
 
 /** Razorpay expects amount in smallest currency unit (paise / cents). */
 export function toRazorpayAmount(amount: number, currency: "INR" | "USD") {
-  return currency === "INR" ? Math.round(amount * 100) : Math.round(amount * 100);
+  if (currency === "INR") {
+    // 399 + 18% GST = 470.82 INR. Rounded to 471 INR = 47100 paise
+    const amountWithGst = Math.round(amount * 1.18);
+    return amountWithGst * 100;
+  }
+  return Math.round(amount * 100);
 }

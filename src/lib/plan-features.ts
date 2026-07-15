@@ -21,7 +21,6 @@ export const FREE_PLAN_INCLUDED = [
 export const FREE_PLAN_EXCLUDED = [
   "Unlimited forms per workspace",
   "Custom logo, colors & canvas backgrounds",
-  "Optional landing page per form",
   "File upload, signature & consent fields",
   "CSV export of submissions",
   "Optional approval status tracking",
@@ -39,7 +38,6 @@ export const PRO_PLAN_FEATURES = [
   "CSV export of submissions",
   "Ready-made templates library",
   "Custom logo, colors & canvas backgrounds",
-  "Optional landing page per form",
   "File upload, signature & consent fields",
   "Optional approval status tracking",
   "Media library for logos & attachments",

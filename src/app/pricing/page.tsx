@@ -22,6 +22,10 @@ export default function PricingPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isIndia, setIsIndia] = useState(true);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [helpedBySaathi, setHelpedBySaathi] = useState(false);
+  const [inputSaathiCode, setInputSaathiCode] = useState("");
+  const [workspaceSaathiCode, setWorkspaceSaathiCode] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/geo")
@@ -36,6 +40,19 @@ export default function PricingPage() {
         }
       });
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    apiClient("/api/workspace")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.workspace?.saathicode) {
+          setWorkspaceSaathiCode(data.workspace.saathicode);
+          setInputSaathiCode(data.workspace.saathicode);
+        }
+      })
+      .catch((err) => console.error("Error fetching workspace details:", err));
+  }, [user]);
 
   const pricing = getProPricing(isIndia);
 
@@ -71,7 +88,7 @@ export default function PricingPage() {
       : "No expiry — free forever";
   const expiryIsAlert = isTrial && !trialActive;
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = async (saathiCode?: string) => {
     if (!user) {
       router.push("/login");
       return;
@@ -107,11 +124,19 @@ export default function PricingPage() {
           theme: { color: "#10b981" },
           handler: async (response) => {
             try {
-              await apiClient("/api/billing/razorpay/verify", {
+              const verifyRes = await apiClient("/api/billing/razorpay/verify", {
                 method: "POST",
-                body: JSON.stringify(response),
+                body: JSON.stringify({
+                  ...response,
+                  saathicode: helpedBySaathi ? saathiCode : undefined,
+                }),
               });
-              setUser({ ...user, pricingPlan: "Pro" });
+              const verifyData = await verifyRes.json();
+              setUser({ 
+                ...user, 
+                pricingPlan: verifyData.profile.pricingPlan,
+                trialEndsAt: verifyData.profile.trialEndsAt
+              });
               setSuccess(true);
               resolve();
             } catch (verifyErr: unknown) {
@@ -274,9 +299,16 @@ export default function PricingPage() {
           </span>
           <div className="space-y-4">
             <span className="text-[10px] font-black uppercase text-primary tracking-wider">Professional Suite</span>
-            <div className="flex items-baseline gap-1 pt-1">
-              <span className="text-4xl font-black text-slate-800 dark:text-zinc-100">{pricing.display}</span>
-              <span className="text-xs text-slate-400 font-bold">/ month</span>
+            <div className="flex flex-col items-start gap-0.5 pt-1">
+              <div className="flex items-baseline gap-1">
+                <span className="text-4xl font-black text-slate-800 dark:text-zinc-100">{pricing.display}</span>
+                <span className="text-xs text-slate-400 font-bold">/ month</span>
+              </div>
+              {pricing.currency === "INR" && (
+                <span className="text-[10px] font-bold text-slate-400 leading-none">
+                  + 18% GST
+                </span>
+              )}
             </div>
             <p className="text-xs text-slate-400 leading-normal font-medium">
               {PRICING_COPY.proDescription}
@@ -294,14 +326,16 @@ export default function PricingPage() {
           <div className="pt-6">
             {user?.pricingPlan === "Pro" ? (
               <button
-                disabled
-                className="w-full py-3 rounded-xl border border-emerald-500/20 text-xs font-black uppercase tracking-wider text-emerald-500 bg-emerald-500/10 text-center cursor-default"
+                onClick={() => setShowConfirmModal(true)}
+                disabled={upgrading}
+                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-black text-xs uppercase tracking-wider hover:opacity-90 active:scale-[0.98] duration-200 cursor-pointer flex items-center justify-center gap-1.5 shadow-lg shadow-primary/20 disabled:opacity-60"
               >
-                Pro Plan Active
+                <CreditCard className="h-4.5 w-4.5 shrink-0" />
+                <span>{upgrading ? "Opening checkout..." : "Renew Now"}</span>
               </button>
             ) : (
               <button
-                onClick={handleUpgrade}
+                onClick={() => setShowConfirmModal(true)}
                 disabled={upgrading}
                 className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-black text-xs uppercase tracking-wider hover:opacity-90 active:scale-[0.98] duration-200 cursor-pointer flex items-center justify-center gap-1.5 shadow-lg shadow-primary/20 disabled:opacity-60"
               >
@@ -312,6 +346,147 @@ export default function PricingPage() {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-[#030308]/60 backdrop-blur-sm animate-fadeIn">
+          <div className="relative w-full max-w-md bg-white dark:bg-[#0c0f1d] border border-slate-200 dark:border-zinc-800 rounded-3xl p-6 shadow-2xl space-y-5 select-none animate-fadeInDown">
+            {/* Close Button */}
+            <button 
+              onClick={() => setShowConfirmModal(false)}
+              className="absolute top-4 right-4 h-8 w-8 rounded-full border border-border flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            {/* Plan Header */}
+            <div className="space-y-1.5 pr-8">
+              <span className="bg-primary/10 border border-primary/20 text-primary px-3 py-1 rounded-full text-[9px] font-black tracking-widest uppercase inline-block">
+                Confirm Subscription
+              </span>
+              <h3 className="text-xl font-black text-slate-800 dark:text-zinc-100">
+                Upgrade to Professional Suite
+              </h3>
+              <p className="text-xs text-slate-400 font-semibold leading-relaxed">
+                Get full access to all premium features, custom branding, and unlimited form responses.
+              </p>
+            </div>
+
+            {/* Plan Info Card */}
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-zinc-900/40 border border-slate-100 dark:border-zinc-800/60 flex flex-col gap-2.5">
+              <div className="flex justify-between items-center">
+                <div>
+                  <span className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">Billing Period</span>
+                  <span className="text-sm font-bold text-slate-700 dark:text-zinc-200">Monthly Billing</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">
+                    {pricing.currency === "INR" ? "Base Amount" : "Amount"}
+                  </span>
+                  <span className={pricing.currency === "INR" ? "text-sm font-extrabold text-slate-700 dark:text-zinc-200" : "text-lg font-black text-primary"}>
+                    {pricing.display}
+                  </span>
+                </div>
+              </div>
+              {pricing.currency === "INR" && (
+                <>
+                  <div className="h-[1px] bg-slate-200/60 dark:bg-zinc-800/60" />
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="font-bold text-slate-500 dark:text-zinc-400">GST (18%)</span>
+                    <span className="font-bold text-slate-600 dark:text-zinc-300">₹71.82</span>
+                  </div>
+                  <div className="h-[1px] bg-slate-200/60 dark:bg-zinc-800/60" />
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Grand Total</span>
+                    <span className="text-lg font-black text-primary">₹471</span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Helped by ANSH Saathi Toggle Section */}
+            <div className="space-y-3.5 border-t border-border/40 pt-4">
+              <label className="flex items-center justify-between cursor-pointer select-none">
+                <div className="space-y-0.5">
+                  <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 block">
+                    Helped by ANSH Saathi?
+                  </span>
+                  <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-semibold block leading-tight">
+                    Toggle to attribute this subscription to an ANSH Saathi
+                  </span>
+                </div>
+                
+                {/* Switch toggle layout */}
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={helpedBySaathi}
+                    onChange={(e) => {
+                      setHelpedBySaathi(e.target.checked);
+                      if (!e.target.checked) {
+                        // Keep input code synced with workspace code if turning off
+                        setInputSaathiCode(workspaceSaathiCode || "");
+                      }
+                    }}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-slate-200 dark:bg-zinc-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary" />
+                </div>
+              </label>
+
+              {/* Toggle Content (Saathi Code input) */}
+              {helpedBySaathi && (
+                <div className="space-y-1.5 p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/25 border border-zinc-150 dark:border-zinc-800/40 animate-fadeInDown">
+                  <label className="text-[9px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-widest block">
+                    Saathi Code
+                  </label>
+                  {workspaceSaathiCode ? (
+                    <div className="space-y-1.5">
+                      <div className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-zinc-850/60 border border-slate-200 dark:border-zinc-800 text-xs font-bold text-slate-600 dark:text-zinc-300">
+                        {workspaceSaathiCode}
+                      </div>
+                      <p className="text-[9px] text-emerald-600 dark:text-emerald-500 font-semibold leading-tight flex items-center gap-1">
+                        ✓ Code pre-loaded from your workspace settings
+                      </p>
+                    </div>
+                  ) : (
+                    <input 
+                      type="text" 
+                      value={inputSaathiCode}
+                      onChange={(e) => setInputSaathiCode(e.target.value)}
+                      placeholder="e.g. SAATHI-00001"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-850 focus:border-primary/50 text-xs font-bold text-slate-800 dark:text-zinc-150 outline-none transition-all placeholder:text-zinc-400 focus:bg-white"
+                      required
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Confirm / Action Buttons */}
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowConfirmModal(false)}
+                className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-slate-800/40 text-slate-600 dark:text-zinc-400 font-extrabold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer text-center"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowConfirmModal(false);
+                  handleUpgrade(inputSaathiCode);
+                }}
+                disabled={helpedBySaathi && !inputSaathiCode.trim()}
+                className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-black text-xs uppercase tracking-wider hover:opacity-90 active:scale-[0.98] duration-200 cursor-pointer flex items-center justify-center gap-1.5 shadow-lg shadow-primary/20 disabled:opacity-50 disabled:pointer-events-none"
+              >
+                Proceed to Pay
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

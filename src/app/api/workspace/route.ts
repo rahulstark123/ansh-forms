@@ -18,7 +18,7 @@ export async function GET(req: Request) {
 
     const slug = await ensureWorkspaceSlug(workspace);
     return NextResponse.json({
-      workspace: { name: workspace.name, slug, wid: workspace.wid },
+      workspace: { name: workspace.name, slug, wid: workspace.wid, saathicode: workspace.saathicode },
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to load workspace.";

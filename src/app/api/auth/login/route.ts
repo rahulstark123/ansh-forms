@@ -58,8 +58,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Profile not found in database." }, { status: 404 });
     }
 
-    // Check if free trial has expired
-    if (profile.pricingPlan === "Free Trial" && profile.trialEndsAt && new Date() > new Date(profile.trialEndsAt)) {
+    // Check if free trial or Pro plan has expired
+    if ((profile.pricingPlan === "Free Trial" || profile.pricingPlan === "Pro") && profile.trialEndsAt && new Date() > new Date(profile.trialEndsAt)) {
       profile = await db.profile.update({
         where: { id: profile.id },
         data: { pricingPlan: "Free" },

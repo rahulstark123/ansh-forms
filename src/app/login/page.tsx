@@ -154,6 +154,7 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [acceptedPolicies, setAcceptedPolicies] = useState(false);
+  const [saathicode, setSaathicode] = useState("");
 
   // Password Requirements (for Sign Up)
   const [hasMinLength, setHasMinLength] = useState(false);
@@ -344,6 +345,7 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
             email: data.user.email,
             name,
             acceptedPolicies: true,
+            saathicode: saathicode || undefined,
           }),
         });
 
@@ -734,6 +736,25 @@ export default function LoginPage({ initialIsSignUp = false }: { initialIsSignUp
                   >
                     {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
+                </div>
+              </div>
+            )}
+
+            {/* Helped by ANSH Saathi (Only on Sign Up, Optional) */}
+            {isSignUp && (
+              <div className="space-y-1 animate-fadeInDown">
+                <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest block">
+                  Helped by ANSH Saathi
+                </label>
+                <div className="relative">
+                  <Bot className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                  <input 
+                    type="text" 
+                    value={saathicode}
+                    onChange={(e) => setSaathicode(e.target.value)}
+                    placeholder="e.g. SAATHI-00001"
+                    className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 focus:border-primary/50 text-sm font-semibold text-zinc-900 outline-none transition-all placeholder:text-zinc-400 focus:bg-white animate-fadeIn"
+                  />
                 </div>
               </div>
             )}

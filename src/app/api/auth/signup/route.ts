@@ -4,7 +4,7 @@ import { resolveUniqueWorkspaceSlug } from "@/lib/workspace-slug";
 
 export async function POST(request: Request) {
   try {
-    const { id, email, name, acceptedPolicies } = await request.json();
+    const { id, email, name, acceptedPolicies, saathicode } = await request.json();
 
     if (!id || !email || !name) {
       return NextResponse.json({ error: "Missing required profile details." }, { status: 400 });
@@ -35,11 +35,14 @@ export async function POST(request: Request) {
     // Ensure Workspace exists
     await db.workspace.upsert({
       where: { wid: nextWid },
-      update: {},
+      update: {
+        saathicode: saathicode || null,
+      },
       create: {
         wid: nextWid,
         name: workspaceName,
         slug: workspaceSlug,
+        saathicode: saathicode || null,
       },
     });
 

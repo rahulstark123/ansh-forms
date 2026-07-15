@@ -4,12 +4,13 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Layers, FileText, Sparkles, ArrowRight, BookOpen, UserCheck, Calendar, Star, Compass, Mail,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, Eye, X
 } from "lucide-react";
 import { FORM_TEMPLATES } from "@/config/templates";
 import { apiClient } from "@/lib/api-client";
 import { useUIStore } from "@/stores/ui-store";
 import { cn } from "@/lib/utils";
+import { FormFieldPreview } from "@/components/forms/form-field-preview";
 
 const CATEGORIES = ["All", "Registration", "Feedback", "Lead Gen", "Operations"];
 const PAGE_SIZE = 8;
@@ -63,6 +64,7 @@ export default function TemplatesPage() {
   const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
+  const [previewTemplateId, setPreviewTemplateId] = useState<string | null>(null);
 
   const handleUseFormTemplate = async (templateId: string, customTitle?: string) => {
     setLoading(true);
@@ -216,13 +218,22 @@ export default function TemplatesPage() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => handleUseFormTemplate(item.id, item.title)}
-                    className="w-full mt-6 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-primary hover:text-primary-foreground border border-border group-hover:border-primary/30 text-xs font-black uppercase tracking-wider text-slate-655 hover:shadow-md transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5"
-                  >
-                    <span>Deploy Form</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </button>
+                  <div className="flex gap-2 mt-6">
+                    <button
+                      onClick={() => setPreviewTemplateId(item.id)}
+                      className="p-2.5 rounded-xl bg-slate-50 border border-border hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200 transition-all cursor-pointer flex items-center justify-center shrink-0"
+                      title="Preview Template"
+                    >
+                      <Eye className="h-4.5 w-4.5" />
+                    </button>
+                    <button
+                      onClick={() => handleUseFormTemplate(item.id, item.title)}
+                      className="flex-1 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 hover:bg-primary hover:text-primary-foreground border border-border group-hover:border-primary/30 text-xs font-black uppercase tracking-wider text-slate-655 hover:shadow-md transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <span>Deploy Form</span>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -288,6 +299,82 @@ export default function TemplatesPage() {
           )}
         </div>
       )}
+
+      {/* Template Preview Modal */}
+      {previewTemplateId && (() => {
+        const template = FORM_TEMPLATES.find((t) => t.id === previewTemplateId);
+        if (!template) return null;
+        return (
+          <div className="fixed inset-0 z-[999] flex items-center justify-center bg-[#030308]/60 backdrop-blur-sm animate-fadeIn">
+            <div className="relative w-full max-w-xl bg-white dark:bg-[#0c0f1d] border border-slate-200 dark:border-zinc-800 rounded-3xl p-6 shadow-2xl space-y-5 select-none animate-fadeInDown flex flex-col max-h-[85vh]">
+              {/* Close Button */}
+              <button 
+                onClick={() => setPreviewTemplateId(null)}
+                className="absolute top-4 right-4 h-8 w-8 rounded-full border border-border flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              {/* Header */}
+              <div className="space-y-1.5 pr-8">
+                <span className="bg-primary/10 border border-primary/20 text-primary px-3 py-1 rounded-full text-[9px] font-black tracking-widest uppercase inline-block">
+                  Template Preview
+                </span>
+                <h3 className="text-xl font-black text-slate-800 dark:text-zinc-100">
+                  {template.title}
+                </h3>
+                <p className="text-xs text-slate-400 dark:text-zinc-500 font-semibold leading-relaxed">
+                  {template.description}
+                </p>
+              </div>
+
+              {/* Fields List */}
+              <div className="flex-1 overflow-y-auto pr-1 space-y-4 py-2 border-y border-border/40">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
+                  Form Fields Preview ({template.fields.length})
+                </span>
+                <div className="space-y-4">
+                  {template.fields.map((field) => (
+                    <div key={field.id} className="space-y-1.5 text-left">
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs font-bold text-slate-650 dark:text-zinc-300">
+                          {field.label}
+                        </span>
+                        {field.required && (
+                          <span className="text-xs text-red-500 font-bold">*</span>
+                        )}
+                      </div>
+                      <FormFieldPreview field={field as any} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Footer Actions */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setPreviewTemplateId(null)}
+                  className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-slate-800/40 text-slate-650 dark:text-zinc-400 font-extrabold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer text-center"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPreviewTemplateId(null);
+                    handleUseFormTemplate(template.id, template.title);
+                  }}
+                  className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-black text-xs uppercase tracking-wider hover:opacity-90 active:scale-[0.98] duration-200 cursor-pointer flex items-center justify-center gap-1.5 shadow-lg shadow-primary/20"
+                >
+                  <span>Deploy Template</span>
+                  <ArrowRight className="h-4 w-4 shrink-0" />
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

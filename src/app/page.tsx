@@ -311,6 +311,18 @@ export default async function RootPage() {
               <a href="#faq" className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">FAQ</a>
             </nav>
             <div className="flex items-center gap-2">
+              {/* ANSH Saathi Tri-color Button */}
+              <a
+                href="https://saathi.anshapps.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative inline-flex items-center justify-center p-[1.5px] rounded-full overflow-hidden bg-gradient-to-r from-[#FF9933] via-slate-200 dark:via-zinc-700 to-[#128807] transition-all hover:scale-105 duration-200 shadow-sm mr-1"
+              >
+                <span className="px-4.5 py-1 rounded-full bg-white dark:bg-zinc-950 text-xs font-black text-[#09357a] dark:text-[#5c85d6] transition-colors">
+                  ANSH Saathi
+                </span>
+              </a>
+
               <LandingThemeToggle />
               <Link href="/login" className="px-4 py-2 rounded-xl border border-zinc-300 text-zinc-700 dark:border-white/15 dark:text-zinc-200 text-xs font-bold uppercase tracking-wider hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors">
                 Login
@@ -650,9 +662,16 @@ export default async function RootPage() {
                     <span className="px-2 py-0.5 rounded bg-violet-500/10 border border-violet-500/20 text-[8px] font-black uppercase tracking-wider text-violet-400">
                       Best Value
                     </span>
-                    <div className="flex items-baseline gap-1 text-right">
-                      <span className="text-4xl font-black text-white">{proPrice}</span>
-                      <span className="text-[10px] text-zinc-400 font-bold">/ month</span>
+                    <div className="flex flex-col items-end gap-0.5">
+                      <div className="flex items-baseline gap-1 text-right">
+                        <span className="text-4xl font-black text-white">{proPrice}</span>
+                        <span className="text-[10px] text-zinc-400 font-bold">/ month</span>
+                      </div>
+                      {isIndia && (
+                        <span className="text-[10px] text-zinc-400 font-bold leading-none">
+                          + 18% GST
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -785,6 +804,48 @@ export default async function RootPage() {
                 <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 leading-relaxed">
                   Steep learning curves, complicated configurations, generic layouts, expensive per-user seating licenses, separate add-on bills for file attachments/storage space, and restrictive response limits.
                 </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── BECOME AN ANSH SAATHI BANNER ─────────────────────────── */}
+        <section className={`relative z-10 py-12 ${SECTION_BORDER}`}>
+          <div className={LANDING_SHELL}>
+            <div className="relative rounded-3xl overflow-hidden bg-zinc-950 dark:bg-zinc-950 border border-zinc-800 p-8 md:p-12 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-8 group">
+              {/* Tri-color Top border line */}
+              <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-[#FF9933] via-zinc-500/20 to-[#128807]" />
+              
+              {/* Left Column: Text Content */}
+              <div className="space-y-4 max-w-2xl text-left">
+                <span className="text-[10px] font-black uppercase text-[#FF9933] tracking-[0.2em] block">
+                  ANSH SAATHI
+                </span>
+                <div className="space-y-2">
+                  <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">
+                    Become an ANSH Saathi.
+                  </h2>
+                  <div className="h-[2px] w-12 bg-gradient-to-r from-[#128807] to-transparent" />
+                </div>
+                <p className="text-sm font-extrabold text-[#FF9933] tracking-wide">
+                  Saath Chalein. Saath Badhein.
+                </p>
+                <p className="text-xs font-semibold text-zinc-400 leading-relaxed">
+                  Walk alongside Indian businesses. Help MSMEs grow with simple software — and build your own recurring income. First 20 founding Saathis. No joining fee.
+                </p>
+              </div>
+
+              {/* Right Column: CTA Button */}
+              <div className="shrink-0">
+                <a
+                  href="https://saathi.anshapps.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-violet-600 hover:bg-violet-500 text-white text-xs font-black uppercase tracking-wider transition-all duration-300 shadow-[0_0_20px_rgba(124,58,237,0.3)] hover:shadow-[0_0_30px_rgba(124,58,237,0.55)] active:scale-[0.98] cursor-pointer"
+                >
+                  <span>Become a Saathi</span>
+                  <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" />
+                </a>
               </div>
             </div>
           </div>

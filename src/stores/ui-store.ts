@@ -101,7 +101,7 @@ interface UIStore {
 }
 
 export const useUIStore = create<UIStore>((set) => ({
-  theme: "dark", // Default to dark theme for ANSH suite
+  theme: "light", // Default to light theme for ANSH suite
   setTheme: (theme) => {
     set({ theme });
     if (typeof window !== "undefined") {

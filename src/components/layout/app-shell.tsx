@@ -130,7 +130,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     };
   }, [setUser, pathname, router]);
 
-  const getTrialDaysLeft = () => {
+  const getDaysLeft = () => {
     if (!user || !user.trialEndsAt) return 0;
     const ends = new Date(user.trialEndsAt).getTime();
     const now = new Date().getTime();
@@ -139,8 +139,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
   };
 
-  const trialDaysLeft = getTrialDaysLeft();
-  const showTrialBanner = bannerVisible && user?.pricingPlan === "Free Trial" && trialDaysLeft > 0;
+  const daysLeft = getDaysLeft();
+  const showTrialBanner = bannerVisible && user?.pricingPlan === "Free Trial" && daysLeft > 0;
+  const showProExpiryBanner = bannerVisible && user?.pricingPlan === "Pro" && daysLeft > 0 && daysLeft <= 10;
 
   if (loading) {
     return (
@@ -189,7 +190,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="bg-sky-600 dark:bg-sky-750 text-white px-6 py-2 flex items-center justify-between text-xs font-bold shrink-0 z-40 select-none animate-fadeInDown shadow-sm">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
-              <span>Free Trial Active — all features unlocked - {trialDaysLeft} {trialDaysLeft === 1 ? "day" : "days"} left</span>
+              <span>Free Trial Active — all features unlocked - {daysLeft} {daysLeft === 1 ? "day" : "days"} left</span>
             </div>
             <div className="flex items-center gap-4">
               <button
@@ -201,6 +202,31 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <button
                 onClick={() => setBannerVisible(false)}
                 className="text-sky-200 hover:text-white p-0.5 rounded transition-colors cursor-pointer font-bold text-sm leading-none"
+                title="Dismiss"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Pro Plan Expiry Banner */}
+        {showProExpiryBanner && (
+          <div className="bg-amber-600 dark:bg-amber-700 text-white px-6 py-2 flex items-center justify-between text-xs font-bold shrink-0 z-40 select-none animate-fadeInDown shadow-sm">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-red-400 animate-ping shrink-0" />
+              <span>Your pro plan is expiring soon — {daysLeft} {daysLeft === 1 ? "day" : "days"} left</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => router.push("/pricing")}
+                className="underline text-[10px] uppercase tracking-widest font-black text-amber-100 hover:text-white transition-colors cursor-pointer"
+              >
+                Renew
+              </button>
+              <button
+                onClick={() => setBannerVisible(false)}
+                className="text-amber-200 hover:text-white p-0.5 rounded transition-colors cursor-pointer font-bold text-sm leading-none"
                 title="Dismiss"
               >
                 ✕
