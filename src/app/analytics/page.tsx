@@ -22,6 +22,9 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
 import { useUIStore } from "@/stores/ui-store";
 import { cn } from "@/lib/utils";
@@ -40,6 +43,7 @@ import type { AnalyticItem } from "./types";
 
 const AXIS_TICK = { fontSize: 10, fontWeight: 600, fill: "var(--muted-foreground)" };
 const GRID_STROKE = "var(--border)";
+const PIE_COLORS = ["#0ea5e9", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "#f43f5e"];
 
 function computeSummary(items: AnalyticItem[]) {
   const formsOnly = items.filter((x) => !x.isLandingPage);
@@ -64,6 +68,7 @@ export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticItem[]>([]);
   const [trendData, setTrendData] = useState<{ month: string; views: number; responses: number }[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [pieDataKey, setPieDataKey] = useState<"views" | "responses">("responses");
 
   useEffect(() => {
     setMounted(true);
@@ -291,21 +296,65 @@ export default function AnalyticsPage() {
 
           {/* Secondary row */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <ChartCard title="Top Forms" subtitle="Views vs responses (top 6)">
+            <ChartCard 
+              title="Top Forms Distribution" 
+              subtitle={`Top 6 forms by ${pieDataKey}`}
+              action={
+                <div className="flex items-center rounded-lg border border-border bg-slate-50 dark:bg-slate-900/60 p-0.5 select-none shrink-0">
+                  <button
+                    onClick={() => setPieDataKey("views")}
+                    className={cn(
+                      "px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all",
+                      pieDataKey === "views"
+                        ? "bg-sky-500/10 text-sky-500"
+                        : "text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200"
+                    )}
+                  >
+                    Views
+                  </button>
+                  <button
+                    onClick={() => setPieDataKey("responses")}
+                    className={cn(
+                      "px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider cursor-pointer transition-all",
+                      pieDataKey === "responses"
+                        ? "bg-emerald-500/10 text-emerald-500"
+                        : "text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200"
+                    )}
+                  >
+                    Responses
+                  </button>
+                </div>
+              }
+            >
               {chartData.length === 0 ? (
                 <p className="py-12 text-center text-xs font-bold text-slate-400">No data for this category.</p>
               ) : (
                 <div className="h-64 w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData} margin={{ top: 4, right: 4, left: -12, bottom: 0 }} barGap={4} barCategoryGap="22%">
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={GRID_STROKE} opacity={0.5} />
-                      <XAxis dataKey="name" tick={AXIS_TICK} axisLine={false} tickLine={false} interval={0} angle={-18} textAnchor="end" height={52} />
-                      <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} width={36} />
+                    <PieChart>
+                      <Pie
+                        data={chartData}
+                        dataKey={pieDataKey}
+                        nameKey="name"
+                        cx="50%"
+                        cy="45%"
+                        innerRadius={50}
+                        outerRadius={72}
+                        paddingAngle={3}
+                      >
+                        {chartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                        ))}
+                      </Pie>
                       <Tooltip content={<ChartTooltip />} />
-                      <Legend wrapperStyle={{ fontSize: 11, fontWeight: 700 }} />
-                      <Bar dataKey="views" name="Views" fill={CHART_COLORS.views} radius={[6, 6, 0, 0]} maxBarSize={28} />
-                      <Bar dataKey="responses" name="Responses" fill={CHART_COLORS.responses} radius={[6, 6, 0, 0]} maxBarSize={28} />
-                    </BarChart>
+                      <Legend 
+                        iconType="circle"
+                        wrapperStyle={{ fontSize: 9.5, fontWeight: 700 }}
+                        layout="horizontal"
+                        align="center"
+                        verticalAlign="bottom"
+                      />
+                    </PieChart>
                   </ResponsiveContainer>
                 </div>
               )}

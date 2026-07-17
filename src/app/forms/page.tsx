@@ -16,6 +16,7 @@ import { FormQrModal } from "@/components/forms/form-qr-modal";
 import { getFormPublicUrl, getFormPublicPath } from "@/lib/form-public-url";
 import { useFormCategories } from "@/hooks/use-form-categories";
 import { useWorkspaceSlug } from "@/hooks/use-workspace-slug";
+import { UpgradeLimitModal } from "@/components/billing/upgrade-limit-modal";
 
 interface FormItem {
   id: string;
@@ -61,6 +62,7 @@ export default function FormsPage() {
   const [aiPrompt, setAiPrompt] = useState("");
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [limitModalOpen, setLimitModalOpen] = useState(false);
 
   // Custom Delete Confirmation Modal State
   const [formToDelete, setFormToDelete] = useState<FormItem | null>(null);
@@ -99,8 +101,7 @@ export default function FormsPage() {
     if (!formTitle.trim()) return;
 
     if (user?.pricingPlan === "Free" && forms.length >= 5) {
-      alert("Upgrade to PRO to create more than 5 forms. Check out the Pricing page!");
-      router.push("/pricing");
+      setLimitModalOpen(true);
       return;
     }
 
@@ -171,8 +172,7 @@ export default function FormsPage() {
     if (!template) return;
 
     if (user?.pricingPlan === "Free" && forms.length >= 5) {
-      alert("Upgrade to PRO to create more than 5 forms. Check out the Pricing page!");
-      router.push("/pricing");
+      setLimitModalOpen(true);
       return;
     }
 
@@ -220,8 +220,7 @@ export default function FormsPage() {
     if (!aiPrompt.trim()) return;
 
     if (user?.pricingPlan === "Free" && forms.length >= 5) {
-      alert("Upgrade to PRO to create more than 5 forms. Check out the Pricing page!");
-      router.push("/pricing");
+      setLimitModalOpen(true);
       return;
     }
 
@@ -591,7 +590,14 @@ export default function FormsPage() {
         </div>
         
         <button
-          onClick={() => { setCreateError(null); setIsModalOpen(true); }}
+          onClick={() => {
+            if (user?.pricingPlan === "Free" && forms.length >= 5) {
+              setLimitModalOpen(true);
+            } else {
+              setCreateError(null);
+              setIsModalOpen(true);
+            }
+          }}
           className="flex items-center gap-2 rounded-xl bg-primary text-primary-foreground font-black text-xs uppercase tracking-wider px-4 py-3 shadow-sm hover:scale-[1.02] active:scale-95 cursor-pointer duration-200"
         >
           <Plus className="h-4.5 w-4.5" />
@@ -1183,6 +1189,11 @@ export default function FormsPage() {
         onClose={() => setQrForm(null)}
         formTitle={qrForm?.title || "Form"}
         slug={qrForm?.slug || ""}
+      />
+
+      <UpgradeLimitModal
+        isOpen={limitModalOpen}
+        onClose={() => setLimitModalOpen(false)}
       />
     </div>
   );

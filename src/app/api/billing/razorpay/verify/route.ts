@@ -54,6 +54,69 @@ export async function POST(req: Request) {
       },
     });
 
+    // Generate and save billing receipt/invoice
+    try {
+      const existingReceipt = await db.receipt.findUnique({
+        where: { gatewayOrderId: razorpay_order_id },
+      });
+
+      if (!existingReceipt) {
+        const { getRazorpayClient } = await import("@/lib/razorpay");
+        const { buildReceiptPdf } = await import("@/lib/receipt");
+        const { uploadFile } = await import("@/lib/r2");
+
+        const razorpay = getRazorpayClient();
+        const order = await razorpay.orders.fetch(razorpay_order_id);
+
+        const currentYear = new Date().getFullYear();
+        const uniqueSuffix = razorpay_payment_id.slice(-6).toUpperCase();
+        const receiptNumber = `RCPT-${currentYear}-${uniqueSuffix}`;
+        const invoiceNumber = `INV-${currentYear}-${uniqueSuffix}`;
+
+        const periodStart = new Date();
+        const periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+        const pdfBuffer = await buildReceiptPdf({
+          receiptNumber,
+          invoiceNumber,
+          issuedAt: new Date(),
+          customerName: profile.name || "Customer",
+          customerState: profile.state,
+          ownerName: profile.name,
+          ownerEmail: profile.email,
+          ownerPhone: profile.phone || "",
+          description: "ANSH Forms Pro Plan Subscription",
+          planLabel: "ANSH Forms Pro Plan",
+          qty: 1,
+          amountMinor: typeof order.amount === "number" ? order.amount : Math.round(Number(order.amount) * 100), // safety check
+          currency: order.currency || "INR",
+          gatewayOrderId: razorpay_order_id,
+          gatewayPaymentId: razorpay_payment_id,
+          periodStart,
+          periodEnd,
+        });
+
+        const fileUrl = await uploadFile(`${receiptNumber}.pdf`, pdfBuffer, "application/pdf");
+
+        await db.receipt.create({
+          data: {
+            receiptNumber,
+            invoiceNumber,
+            amountMinor: typeof order.amount === "number" ? order.amount : Math.round(Number(order.amount) * 100),
+            currency: order.currency || "INR",
+            fileUrl,
+            gatewayOrderId: razorpay_order_id,
+            gatewayPaymentId: razorpay_payment_id,
+            profileId: profile.id,
+            issuedAt: new Date(),
+          },
+        });
+      }
+    } catch (receiptError) {
+      // Log receipt error but do not fail the billing response since user upgrade succeeded
+      console.error("Failed to generate/save receipt PDF:", receiptError);
+    }
+
     return NextResponse.json({
       message: "Payment verified. Welcome to Pro!",
       profile: {

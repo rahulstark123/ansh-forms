@@ -31,6 +31,7 @@ import { StatCardSkeleton, ResponseTableSkeleton, TopFormsSkeleton } from "@/com
 import { useWorkspaceSlug } from "@/hooks/use-workspace-slug";
 import { isUiOnlyMode, openDraftPlayground, mockAiDraftFromPrompt } from "@/lib/draft-form";
 import { apiClient } from "@/lib/api-client";
+import { UpgradeLimitModal } from "@/components/billing/upgrade-limit-modal";
 
 interface FormItem {
   id: string;
@@ -79,6 +80,7 @@ export default function DashboardPage() {
   const [aiPrompt, setAiPrompt] = useState("");
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [limitModalOpen, setLimitModalOpen] = useState(false);
 
   // Stats
   const [stats, setStats] = useState({
@@ -153,8 +155,7 @@ export default function DashboardPage() {
     }
 
     if (user?.pricingPlan === "Free" && stats.totalForms >= 5) {
-      alert("Upgrade to PRO to create more than 5 forms. Check out the Pricing page!");
-      router.push("/pricing");
+      setLimitModalOpen(true);
       return;
     }
 
@@ -220,8 +221,7 @@ export default function DashboardPage() {
     }
 
     if (user?.pricingPlan === "Free" && stats.totalForms >= 5) {
-      alert("Upgrade to PRO to create more than 5 forms. Check out the Pricing page!");
-      router.push("/pricing");
+      setLimitModalOpen(true);
       return;
     }
 
@@ -265,8 +265,7 @@ export default function DashboardPage() {
     }
 
     if (user?.pricingPlan === "Free" && stats.totalForms >= 5) {
-      alert("Upgrade to PRO to create more than 5 forms. Check out the Pricing page!");
-      router.push("/pricing");
+      setLimitModalOpen(true);
       return;
     }
 
@@ -371,7 +370,13 @@ export default function DashboardPage() {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => {
+              if (user?.pricingPlan === "Free" && stats.totalForms >= 5) {
+                setLimitModalOpen(true);
+              } else {
+                setIsModalOpen(true);
+              }
+            }}
             className="crm-card p-4 text-left bg-card hover:bg-slate-50 dark:hover:bg-slate-900 border-border cursor-pointer flex items-center justify-between group"
           >
             <div className="flex items-center gap-3">
@@ -757,6 +762,11 @@ export default function DashboardPage() {
           </div>
         </Portal>
       )}
+
+      <UpgradeLimitModal
+        isOpen={limitModalOpen}
+        onClose={() => setLimitModalOpen(false)}
+      />
     </div>
   );
 }

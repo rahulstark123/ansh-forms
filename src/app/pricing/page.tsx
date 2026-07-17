@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUIStore } from "@/stores/ui-store";
-import { Check, ShieldCheck, CreditCard, X, Crown, Sparkles, CalendarClock } from "lucide-react";
+import { Check, ShieldCheck, CreditCard, X, Crown, Sparkles, CalendarClock, Receipt } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { getProPricing } from "@/lib/pricing";
 import { loadRazorpayScript } from "@/lib/razorpay-checkout";
@@ -13,6 +13,7 @@ import {
   PRO_PLAN_FEATURES,
   PRICING_COPY,
 } from "@/lib/plan-features";
+import { ReceiptsModal } from "@/components/billing/receipts-modal";
 
 export default function PricingPage() {
   const router = useRouter();
@@ -26,6 +27,8 @@ export default function PricingPage() {
   const [helpedBySaathi, setHelpedBySaathi] = useState(false);
   const [inputSaathiCode, setInputSaathiCode] = useState("");
   const [workspaceSaathiCode, setWorkspaceSaathiCode] = useState<string | null>(null);
+  const [receiptsModalOpen, setReceiptsModalOpen] = useState(false);
+  const [userState, setUserState] = useState<string>("");
 
   useEffect(() => {
     fetch("/api/geo")
@@ -52,6 +55,18 @@ export default function PricingPage() {
         }
       })
       .catch((err) => console.error("Error fetching workspace details:", err));
+  }, [user]);
+
+  useEffect(() => {
+    if (!user?.email) return;
+    fetch(`/api/auth/profile?email=${encodeURIComponent(user.email)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.profile?.state) {
+          setUserState(data.profile.state);
+        }
+      })
+      .catch((err) => console.error("Error fetching user profile:", err));
   }, [user]);
 
   const pricing = getProPricing(isIndia);
@@ -220,15 +235,25 @@ export default function PricingPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 sm:justify-end">
-            <CalendarClock className={`h-5 w-5 shrink-0 ${expiryIsAlert ? "text-rose-500" : "text-slate-400"}`} />
-            <div className="sm:text-right">
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
-                {expiryLabel}
-              </span>
-              <span className={`text-sm font-bold leading-none ${expiryIsAlert ? "text-rose-500" : "text-slate-700 dark:text-zinc-200"}`}>
-                {expiryValue}
-              </span>
+          <div className="flex flex-wrap items-center gap-4 sm:justify-end">
+            <button
+              onClick={() => setReceiptsModalOpen(true)}
+              className="px-3.5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-primary/50 dark:hover:border-primary/50 text-slate-600 dark:text-zinc-400 hover:text-primary dark:hover:text-primary transition-all font-bold text-xs flex items-center gap-1.5 cursor-pointer bg-slate-50/50 dark:bg-zinc-900/25"
+            >
+              <Receipt className="h-3.5 w-3.5" />
+              <span>Billing History</span>
+            </button>
+
+            <div className="flex items-center gap-2.5">
+              <CalendarClock className={`h-5 w-5 shrink-0 ${expiryIsAlert ? "text-rose-500" : "text-slate-400"}`} />
+              <div className="sm:text-right">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                  {expiryLabel}
+                </span>
+                <span className={`text-sm font-bold leading-none ${expiryIsAlert ? "text-rose-500" : "text-slate-700 dark:text-zinc-200"}`}>
+                  {expiryValue}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -388,20 +413,39 @@ export default function PricingPage() {
                   </span>
                 </div>
               </div>
-              {pricing.currency === "INR" && (
-                <>
-                  <div className="h-[1px] bg-slate-200/60 dark:bg-zinc-800/60" />
+              <div className="h-[1px] bg-slate-200/60 dark:bg-zinc-800/60" />
+              {pricing.currency === "INR" ? (
+                userState.trim().toLowerCase() === "bihar" ? (
+                  <>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-bold text-slate-500 dark:text-zinc-400">CGST (9%)</span>
+                      <span className="font-bold text-slate-600 dark:text-zinc-300">₹35.91</span>
+                    </div>
+                    <div className="h-[1px] bg-slate-200/60 dark:bg-zinc-800/60" />
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-bold text-slate-500 dark:text-zinc-400">SGST (9%)</span>
+                      <span className="font-bold text-slate-600 dark:text-zinc-300">₹35.91</span>
+                    </div>
+                  </>
+                ) : (
                   <div className="flex justify-between items-center text-xs">
-                    <span className="font-bold text-slate-500 dark:text-zinc-400">GST (18%)</span>
+                    <span className="font-bold text-slate-500 dark:text-zinc-400">IGST (18%)</span>
                     <span className="font-bold text-slate-600 dark:text-zinc-300">₹71.82</span>
                   </div>
-                  <div className="h-[1px] bg-slate-200/60 dark:bg-zinc-800/60" />
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Grand Total</span>
-                    <span className="text-lg font-black text-primary">₹471</span>
-                  </div>
-                </>
+                )
+              ) : (
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-bold text-slate-500 dark:text-zinc-400">GST (0%)</span>
+                  <span className="font-bold text-slate-600 dark:text-zinc-300">$0.00</span>
+                </div>
               )}
+              <div className="h-[1px] bg-slate-200/60 dark:bg-zinc-800/60" />
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] font-black text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Grand Total</span>
+                <span className="text-lg font-black text-primary">
+                  {pricing.currency === "INR" ? "₹471" : pricing.display}
+                </span>
+              </div>
             </div>
 
             {/* Helped by ANSH Saathi Toggle Section */}
@@ -487,6 +531,8 @@ export default function PricingPage() {
           </div>
         </div>
       )}
+
+      <ReceiptsModal isOpen={receiptsModalOpen} onClose={() => setReceiptsModalOpen(false)} />
     </div>
   );
 }

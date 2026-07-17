@@ -99,8 +99,56 @@ export default function SettingsPage() {
   const [taxId, setTaxId] = useState("");
   const [corporateEmail, setCorporateEmail] = useState("");
   const [address, setAddress] = useState("");
-  const [timezone, setTimezone] = useState("UTC+05:30 (IST)");
+  const [timezone, setTimezone] = useState("Asia/Kolkata");
   const [language, setLanguage] = useState("English (US)");
+  const [pincode, setPincode] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [country, setCountry] = useState("");
+  const [fetchingCompanyPincode, setFetchingCompanyPincode] = useState(false);
+  const [timezones, setTimezones] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      if (typeof Intl !== "undefined" && typeof Intl.supportedValuesOf === "function") {
+        setTimezones(Intl.supportedValuesOf("timeZone"));
+      } else {
+        setTimezones([
+          "Asia/Kolkata", "America/New_York", "Europe/London", "Asia/Singapore", 
+          "Europe/Paris", "America/Los_Angeles", "UTC"
+        ]);
+      }
+    } catch {
+      setTimezones([
+        "Asia/Kolkata", "America/New_York", "Europe/London", "Asia/Singapore", 
+        "Europe/Paris", "America/Los_Angeles", "UTC"
+      ]);
+    }
+  }, []);
+
+  const handleCompanyPincodeChange = async (pin: string) => {
+    setPincode(pin);
+    if (/^\d{6}$/.test(pin)) {
+      setFetchingCompanyPincode(true);
+      try {
+        const res = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data[0] && data[0].Status === "Success" && data[0].PostOffice?.length > 0) {
+            const first = data[0].PostOffice[0];
+            setCity(first.District || first.Block || first.Circle || "");
+            setState(first.State || "");
+            setCountry("India");
+            toast(`Auto-filled HQ: ${first.District || first.Block}, ${first.State}`);
+          }
+        }
+      } catch (err) {
+        console.error("Company pincode lookup error:", err);
+      } finally {
+        setFetchingCompanyPincode(false);
+      }
+    }
+  };
 
   const [categories, setCategories] = useState<string[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
@@ -133,27 +181,40 @@ export default function SettingsPage() {
       .catch(console.error)
       .finally(() => setLoadingProfile(false));
   }, [user?.email]);
-
-  /* Load workspace company name + slug */
+  /* Load workspace details from DB on mount/tab change */
   useEffect(() => {
     if (activeTab !== "company") return;
     apiClient("/api/workspace")
       .then((r) => r.json())
       .then((data) => {
-        if (data.workspace?.name) setCompanyName(data.workspace.name);
-        if (data.workspace?.slug) setCompanySlug(data.workspace.slug);
+        if (data.workspace) {
+          if (data.workspace.name) setCompanyName(data.workspace.name);
+          if (data.workspace.slug) setCompanySlug(data.workspace.slug);
+          if (data.workspace.taxId) setTaxId(data.workspace.taxId);
+          if (data.workspace.corporateEmail) setCorporateEmail(data.workspace.corporateEmail);
+          if (data.workspace.address) setAddress(data.workspace.address);
+          if (data.workspace.timezone) setTimezone(data.workspace.timezone);
+          if (data.workspace.language) setLanguage(data.workspace.language);
+          if (data.workspace.pincode) setPincode(data.workspace.pincode);
+          if (data.workspace.city) setCity(data.workspace.city);
+          if (data.workspace.state) setState(data.workspace.state);
+          if (data.workspace.country) setCountry(data.workspace.country);
+        }
       })
       .catch(console.error);
   }, [activeTab]);
-
   /* Load localStorage for company tab extras (company name comes from the workspace API) */
   useEffect(() => {
     if (typeof window === "undefined") return;
     setTaxId(localStorage.getItem("company_tax_id") || "");
     setCorporateEmail(localStorage.getItem("company_email") || "");
     setAddress(localStorage.getItem("company_address") || "");
-    setTimezone(localStorage.getItem("company_timezone") || "UTC+05:30 (IST)");
+    setTimezone(localStorage.getItem("company_timezone") || "Asia/Kolkata");
     setLanguage(localStorage.getItem("company_language") || "English (US)");
+    setPincode(localStorage.getItem("company_pincode") || "");
+    setCity(localStorage.getItem("company_city") || "");
+    setState(localStorage.getItem("company_state") || "");
+    setCountry(localStorage.getItem("company_country") || "");
   }, []);
 
   /* Load workspace form categories */
@@ -237,7 +298,18 @@ export default function SettingsPage() {
     try {
       const res = await apiClient("/api/workspace", {
         method: "PUT",
-        body: JSON.stringify({ name: companyName }),
+        body: JSON.stringify({ 
+          name: companyName,
+          taxId,
+          corporateEmail,
+          address,
+          timezone,
+          language,
+          pincode,
+          city,
+          state,
+          country
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to save company details.");
@@ -254,6 +326,10 @@ export default function SettingsPage() {
         localStorage.setItem("company_address", address);
         localStorage.setItem("company_timezone", timezone);
         localStorage.setItem("company_language", language);
+        localStorage.setItem("company_pincode", pincode);
+        localStorage.setItem("company_city", city);
+        localStorage.setItem("company_state", state);
+        localStorage.setItem("company_country", country);
       }
       toast("Company details updated successfully.");
     } catch (err: unknown) {
@@ -673,33 +749,67 @@ export default function SettingsPage() {
                 <input type="text" value={taxId} onChange={(e) => setTaxId(e.target.value)} placeholder="e.g. TAX-00000-IN" className="premium-input text-xs font-bold" />
               </div>
             </div>
-            <div>
+             <div>
               <label className="text-[9px] font-black uppercase text-slate-400 block mb-1">Corporate Email Address</label>
               <input type="email" value={corporateEmail} onChange={(e) => setCorporateEmail(e.target.value)} placeholder="admin@yourcompany.com" className="premium-input text-xs font-bold" required />
             </div>
+            
+            {/* HQ Pincode, City, State, Country address block */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div>
+                <label className="text-[9px] font-black uppercase text-slate-400 block mb-1">HQ Pincode</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={pincode}
+                    onChange={(e) => handleCompanyPincodeChange(e.target.value)}
+                    placeholder="e.g. 842001"
+                    className="premium-input text-xs font-bold"
+                  />
+                  {fetchingCompanyPincode && (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-primary" />
+                  )}
+                </div>
+              </div>
+              <div>
+                <label className="text-[9px] font-black uppercase text-slate-400 block mb-1">HQ City / District</label>
+                <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Muzaffarpur" className="premium-input text-xs font-bold" />
+              </div>
+              <div>
+                <label className="text-[9px] font-black uppercase text-slate-400 block mb-1">HQ State</label>
+                <input type="text" value={state} onChange={(e) => setState(e.target.value)} placeholder="e.g. Bihar" className="premium-input text-xs font-bold" />
+              </div>
+              <div>
+                <label className="text-[9px] font-black uppercase text-slate-400 block mb-1">HQ Country</label>
+                <input type="text" value={country} onChange={(e) => setCountry(e.target.value)} placeholder="e.g. India" className="premium-input text-xs font-bold" />
+              </div>
+            </div>
+
             <div>
               <label className="text-[9px] font-black uppercase text-slate-400 block mb-1">Physical HQ Address</label>
               <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street, city, country" className="premium-input text-xs font-bold" required />
             </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
               <div>
                 <label className="text-[9px] font-black uppercase text-slate-400 block mb-1">HQ Local Timezone</label>
-                <select value={timezone} onChange={(e) => setTimezone(e.target.value)} className="premium-input text-xs">
-                  <option value="UTC+05:30 (IST)">UTC+05:30 (IST)</option>
-                  <option value="UTC-08:00 (PST)">UTC-08:00 (PST)</option>
-                  <option value="UTC+00:00 (GMT)">UTC+00:00 (GMT)</option>
-                  <option value="UTC+01:00 (CET)">UTC+01:00 (CET)</option>
-                  <option value="UTC+08:00 (SGT)">UTC+08:00 (SGT)</option>
+                <select value={timezone} onChange={(e) => setTimezone(e.target.value)} className="premium-input text-xs font-bold bg-card">
+                  {timezones.map((tz) => (
+                    <option key={tz} value={tz}>{tz}</option>
+                  ))}
                 </select>
               </div>
               <div>
                 <label className="text-[9px] font-black uppercase text-slate-400 block mb-1">Default System Language</label>
-                <select value={language} onChange={(e) => setLanguage(e.target.value)} className="premium-input text-xs">
-                  <option>English (US)</option>
-                  <option>English (UK)</option>
-                  <option>Hindi (IN)</option>
-                  <option>Spanish (ES)</option>
-                  <option>French (FR)</option>
+                <select value={language} onChange={(e) => setLanguage(e.target.value)} className="premium-input text-xs font-bold bg-card">
+                  {[
+                    "English (US)", "English (UK)", "Hindi (IN)", "Spanish (ES)", "French (FR)",
+                    "German (DE)", "Chinese (CN)", "Japanese (JP)", "Arabic (AR)", "Bengali (IN)",
+                    "Portuguese (PT)", "Russian (RU)", "Italian (IT)", "Dutch (NL)", "Turkish (TR)",
+                    "Korean (KR)", "Vietnamese (VN)", "Tamil (IN)", "Telugu (IN)", "Marathi (IN)", "Urdu (PK)"
+                  ].map((lang) => (
+                    <option key={lang} value={lang}>{lang}</option>
+                  ))}
                 </select>
               </div>
             </div>
